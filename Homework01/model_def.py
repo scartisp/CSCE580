@@ -7,8 +7,17 @@ class SimpleModel(nn.Module):
 
         super().__init__()
         self.nnet = nn.Sequential(
+            nn.Conv2d(3, 16, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+
+            nn.Conv2d(16, 32, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+
             nn.Flatten(),
-            nn.Linear(3 * 28 * 28, 10),
+            nn.Linear(32 * 7 * 7, 10),
+            nn.Softmax(dim=1),
         )
 
     def forward(self, x: Tensor):
