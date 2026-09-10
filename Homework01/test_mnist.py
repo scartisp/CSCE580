@@ -69,6 +69,13 @@ def load_mnist_validation(root="./data"):
 
     return images, labels
 
+def add_colored_mnist(images, labels):
+    n = images.shape[0]
+    fg_color = torch.rand(n, 3, 1, 1).numpy()*0.8+0.2
+    bg_color = torch.rand(n, 3, 1, 1).numpy()*0.8+0.2
+    mask = images[ :, 0:1, :, :]
+    colored_images = mask*fg_color + (1-mask)*bg_color
+    return colored_images, labels
 
 def main():
     parser: ArgumentParser = ArgumentParser()
@@ -77,15 +84,19 @@ def main():
     parser.parse_args()
     args = parser.parse_args()
 
+    torch.manual_seed(42)
+
     # load data
     images, labels = load_mnist_validation()
+    print(images.min(), images.max(), images.mean())
+    colored_images, colored_labels = add_colored_mnist(images, labels)
 
     # load nnet
     nnet: nn.Module = get_model()
     nnet = load_nnet(args.model, nnet)
     nnet.eval()
 
-    # evaluate nnet
+    # evaluate nnet for gray scale
     start_time = time.time()
     nnet_out = nnet(torch.tensor(images, device="cpu")).data.cpu().numpy()
     print(f"NNet time: {time.time() - start_time} seconds")
@@ -97,6 +108,19 @@ def main():
 
     accuracy: float = 100.0 * np.mean(nnet_out.argmax(axis=1) == labels)
     print(f"Accuracy (total with {labels.shape[0]} examples): {accuracy:.2f}%")
+
+    # evaluate nnet for tinted mnist
+    start_time = time.time()
+    nnet_out = nnet(torch.tensor(colored_images, device="cpu")).data.cpu().numpy()
+    print(f"NNet time: {time.time() - start_time} seconds")
+
+    for label in np.unique(colored_labels):
+        label_mask = colored_labels == label
+        accuracy_label_colored: float = 100.0 * np.mean(nnet_out[label_mask].argmax(axis=1) == colored_labels[label_mask])
+        print(f"Accuracy (for label {label} with {sum(label_mask)} examples): {accuracy_label_colored:.2f}%")
+
+    accuracy_colored: float = 100.0 * np.mean(nnet_out.argmax(axis=1) == colored_labels)
+    print(f"Accuracy (total with {colored_labels.shape[0]} examples): {accuracy_colored:.2f}%")
 
 
 if __name__ == "__main__":
