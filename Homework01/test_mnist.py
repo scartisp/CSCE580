@@ -75,7 +75,7 @@ def add_colored_mnist(images, labels):
     bg_color = torch.rand(n, 3, 1, 1).numpy()*0.8+0.2
     mask = images[ :, 0:1, :, :]
     colored_images = mask*fg_color + (1-mask)*bg_color
-    return colored_images, labels
+    return colored_images, labels, fg_color, bg_color
 
 def main():
     parser: ArgumentParser = ArgumentParser()
@@ -89,7 +89,7 @@ def main():
     # load data
     images, labels = load_mnist_validation()
     print(images.min(), images.max(), images.mean())
-    colored_images, colored_labels = add_colored_mnist(images, labels)
+    colored_images, colored_labels, fg_color, bg_color = add_colored_mnist(images, labels)
 
     # load nnet
     nnet: nn.Module = get_model()
@@ -111,16 +111,28 @@ def main():
 
     # evaluate nnet for tinted mnist
     start_time = time.time()
-    nnet_out = nnet(torch.tensor(colored_images, device="cpu")).data.cpu().numpy()
+    nnet_out = nnet(torch.tensor(colored_images, dtype=torch.float32, device="cpu")).data.cpu().numpy()
     print(f"NNet time: {time.time() - start_time} seconds")
+
+    preds = nnet_out.argmax(axis=1)
 
     for label in np.unique(colored_labels):
         label_mask = colored_labels == label
-        accuracy_label_colored: float = 100.0 * np.mean(nnet_out[label_mask].argmax(axis=1) == colored_labels[label_mask])
+        accuracy_label_colored: float = 100.0 * np.mean(preds[label_mask] == colored_labels[label_mask])
         print(f"Accuracy (for label {label} with {sum(label_mask)} examples): {accuracy_label_colored:.2f}%")
 
-    accuracy_colored: float = 100.0 * np.mean(nnet_out.argmax(axis=1) == colored_labels)
+    accuracy_colored: float = 100.0 * np.mean(preds == colored_labels)
     print(f"Accuracy (total with {colored_labels.shape[0]} examples): {accuracy_colored:.2f}%")
+
+    # contrast-based breakdown
+    contrast = np.abs(fg_color - bg_color).mean(axis=1).squeeze()
+    quartiles = np.percentile(contrast, [25, 50, 75])
+    q1_mask = contrast <= quartiles[0]
+    q4_mask = contrast > quartiles[2]
+
+    acc_q1 = 100.0 * np.mean(preds[q1_mask] == colored_labels[q1_mask])
+    acc_q4 = 100.0 * np.mean(preds[q4_mask] == colored_labels[q4_mask])
+    print(f"bottom quartile contrast acc: {acc_q1:.2f}%, top quartile contrast acc: {acc_q4:.2f}%")
 
 
 if __name__ == "__main__":
