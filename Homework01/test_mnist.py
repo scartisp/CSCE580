@@ -1,4 +1,5 @@
 import gzip
+import math
 import struct
 import urllib.request
 from pathlib import Path
@@ -10,6 +11,9 @@ from argparse import ArgumentParser
 
 import torch
 from torch import nn
+
+from scipy.ndimage import rotate
+
 from deepxube.pytorch.nnet_utils import load_nnet
 import time
 
@@ -87,6 +91,24 @@ def add_colored_mnist(images, labels):
     colored_images = mask*fg_color + (1-mask)*bg_color
     return colored_images, labels, fg_color, bg_color
 
+def random_rotate(images, max_angle=45, seed=None):
+    """
+    Rotates each image by a random angle in [-max_angle, max_angle] degrees.
+    images: numpy ndarray, shape (N, 3, H, W)
+    labels: numpy ndarray, shape (N,) — passed through unchanged, returned for convenience
+    returns: rotated_images, labels, angles
+    """
+    n = images.shape[0]
+    angles = np.random.uniform(-max_angle, max_angle, size=n)
+
+    rotated = np.empty_like(images)
+    for i in range(n):
+        rotated[i] = rotate(images[i], angle=angles[i], axes=(1, 2),
+                            reshape=False, order=1, mode='constant', cval=0.0)
+
+    return rotated
+
+
 def test_gray(nnet, images, labels):
     # evaluate nnet for gray scale
     start_time = time.time()
@@ -127,6 +149,7 @@ def test_colored(nnet, colored_images, colored_labels, fg_color, bg_color):
     acc_q4 = 100.0 * np.mean(preds[q4_mask] == colored_labels[q4_mask])
     print(f"bottom quartile contrast acc: {acc_q1:.2f}%, top quartile contrast acc: {acc_q4:.2f}%")
 
+
 def main():
     parser: ArgumentParser = ArgumentParser()
     parser.add_argument("--model", type=str, required=True)
@@ -145,18 +168,32 @@ def main():
     # load data
     images, labels = load_mnist_validation()
     colored_images, colored_labels, fg_color, bg_color = add_colored_mnist(images, labels)
+    rotated_images = random_rotate(images)
+    colored_rotated_images = random_rotate(colored_images)
+    print(type(rotated_images))
+    print(type(images))
     print('\n###############TESTING MNIST GRAY-SCALE###############\n')
     test_gray(nnet, images, labels)
+    print('\n###############TESTING ROTATED MNIST GRAY-SCALE###############\n')
+    test_gray(nnet, rotated_images, labels)
     print('\n###############TESTING MNIST COLORED###############\n')
     test_colored(nnet, colored_images, colored_labels, fg_color, bg_color)
+    print('\n###############TESTING ROTATED MNIST COLORED###############\n')
+    test_colored(nnet, colored_rotated_images, colored_labels, fg_color, bg_color)
 
     #### TESTING CODE FOR EMNIST ####
     emnist_images, emnist_labels = load_emnist()
     colored_emnist_images, colored_emnist_labels, emnist_fg_color, emnist_bg_color = add_colored_mnist(emnist_images, emnist_labels)
+    rotated_emnist_images = random_rotate(emnist_images)
+    colored_rotated_emnist_images = random_rotate(colored_emnist_images)
     print('\n###############TESTING EMNIST GRAY-SCALE###############\n')
     test_gray(nnet, emnist_images, emnist_labels)
+    print('\n###############TESTING ROTATED EMNIST GRAY-SCALE###############\n')
+    test_gray(nnet, rotated_emnist_images, emnist_labels)
     print('\n###############TESTING EMNIST COLORED###############\n')
     test_colored(nnet, colored_emnist_images, colored_emnist_labels, emnist_fg_color, emnist_bg_color)
+    print('\n###############TESTING EMNIST COLORED###############\n')
+    test_colored(nnet, colored_rotated_emnist_images, colored_emnist_labels, emnist_fg_color, emnist_bg_color)
 
 
 
