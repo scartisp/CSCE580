@@ -87,27 +87,7 @@ def add_colored_mnist(images, labels):
     colored_images = mask*fg_color + (1-mask)*bg_color
     return colored_images, labels, fg_color, bg_color
 
-def main():
-    parser: ArgumentParser = ArgumentParser()
-    parser.add_argument("--model", type=str, required=True)
-
-    parser.parse_args()
-    args = parser.parse_args()
-
-    torch.manual_seed(42)
-
-    # load nnet
-    nnet: nn.Module = get_model()
-    nnet = load_nnet(args.model, nnet)
-    nnet.eval()
-
-    #### TESTING CODE FOR MNIST ####
-    # load data
-    images, labels = load_mnist_validation()
-    #print(images.min(), images.max(), images.mean())
-    colored_images, colored_labels, fg_color, bg_color = add_colored_mnist(images, labels)
-
-
+def do_test(nnet, images, labels, colored_images, colored_labels, fg_color, bg_color):
     # evaluate nnet for gray scale
     start_time = time.time()
     nnet_out = nnet(torch.tensor(images, device="cpu")).data.cpu().numpy()
@@ -146,10 +126,32 @@ def main():
     acc_q4 = 100.0 * np.mean(preds[q4_mask] == colored_labels[q4_mask])
     print(f"bottom quartile contrast acc: {acc_q1:.2f}%, top quartile contrast acc: {acc_q4:.2f}%")
 
+def main():
+    parser: ArgumentParser = ArgumentParser()
+    parser.add_argument("--model", type=str, required=True)
+
+    parser.parse_args()
+    args = parser.parse_args()
+
+    torch.manual_seed(42)
+
+    # load nnet
+    nnet: nn.Module = get_model()
+    nnet = load_nnet(args.model, nnet)
+    nnet.eval()
+
+    #### TESTING CODE FOR MNIST ####
+    # load data
+    images, labels = load_mnist_validation()
+    #print(images.min(), images.max(), images.mean())
+    colored_images, colored_labels, fg_color, bg_color = add_colored_mnist(images, labels)
+
+    do_test(nnet, images, labels, colored_images, colored_labels, fg_color, bg_color)
 
     #### TESTING CODE FOR EMNIST ####
     emnist_images, emnist_labels = load_emnist()
-    colored_emnist_images, colored_emnist_labels, emnist_fg_color, emnist_bg_color = add_colored_mnist(emnist_images, emnist_labels )
+    colored_emnist_images, colored_emnist_labels, emnist_fg_color, emnist_bg_color = add_colored_mnist(emnist_images, emnist_labels)
+    do_test(nnet, emnist_images, emnist_labels, colored_emnist_images, colored_emnist_labels, emnist_fg_color, emnist_bg_color)
 
 
 
