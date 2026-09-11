@@ -13,6 +13,8 @@ from torch import nn
 from deepxube.pytorch.nnet_utils import load_nnet
 import time
 
+from emnist import extract_test_samples
+
 
 def download(url: str, path: Path) -> None:
     """Download a file only if it does not already exist."""
@@ -69,6 +71,14 @@ def load_mnist_validation(root="./data"):
 
     return images, labels
 
+def load_emnist():
+    emnist_images, emnist_labels = extract_test_samples('digits')
+    emnist_images = emnist_images.astype(np.float32) / 255.0
+    emnist_images = emnist_images[:, None, :, :]
+    emnist_images = emnist_images.repeat(3, axis=1)
+    return emnist_images, emnist_labels
+
+
 def add_colored_mnist(images, labels):
     n = images.shape[0]
     fg_color = torch.rand(n, 3, 1, 1).numpy()*0.8+0.2
@@ -86,15 +96,17 @@ def main():
 
     torch.manual_seed(42)
 
-    # load data
-    images, labels = load_mnist_validation()
-    print(images.min(), images.max(), images.mean())
-    colored_images, colored_labels, fg_color, bg_color = add_colored_mnist(images, labels)
-
     # load nnet
     nnet: nn.Module = get_model()
     nnet = load_nnet(args.model, nnet)
     nnet.eval()
+
+    #### TESTING CODE FOR MNIST ####
+    # load data
+    images, labels = load_mnist_validation()
+    #print(images.min(), images.max(), images.mean())
+    colored_images, colored_labels, fg_color, bg_color = add_colored_mnist(images, labels)
+
 
     # evaluate nnet for gray scale
     start_time = time.time()
@@ -133,6 +145,12 @@ def main():
     acc_q1 = 100.0 * np.mean(preds[q1_mask] == colored_labels[q1_mask])
     acc_q4 = 100.0 * np.mean(preds[q4_mask] == colored_labels[q4_mask])
     print(f"bottom quartile contrast acc: {acc_q1:.2f}%, top quartile contrast acc: {acc_q4:.2f}%")
+
+
+    #### TESTING CODE FOR EMNIST ####
+    emnist_images, emnist_labels = load_emnist()
+    colored_emnist_images, colored_emnist_labels, emnist_fg_color, emnist_bg_color = add_colored_mnist(emnist_images, emnist_labels )
+
 
 
 if __name__ == "__main__":
