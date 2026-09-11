@@ -87,7 +87,7 @@ def add_colored_mnist(images, labels):
     colored_images = mask*fg_color + (1-mask)*bg_color
     return colored_images, labels, fg_color, bg_color
 
-def do_test(nnet, images, labels, colored_images, colored_labels, fg_color, bg_color):
+def test_gray(nnet, images, labels):
     # evaluate nnet for gray scale
     start_time = time.time()
     nnet_out = nnet(torch.tensor(images, device="cpu")).data.cpu().numpy()
@@ -101,6 +101,7 @@ def do_test(nnet, images, labels, colored_images, colored_labels, fg_color, bg_c
     accuracy: float = 100.0 * np.mean(nnet_out.argmax(axis=1) == labels)
     print(f"Accuracy (total with {labels.shape[0]} examples): {accuracy:.2f}%")
 
+def test_colored(nnet, colored_images, colored_labels, fg_color, bg_color):
     # evaluate nnet for tinted mnist
     start_time = time.time()
     nnet_out = nnet(torch.tensor(colored_images, dtype=torch.float32, device="cpu")).data.cpu().numpy()
@@ -143,15 +144,19 @@ def main():
     #### TESTING CODE FOR MNIST ####
     # load data
     images, labels = load_mnist_validation()
-    #print(images.min(), images.max(), images.mean())
     colored_images, colored_labels, fg_color, bg_color = add_colored_mnist(images, labels)
-
-    do_test(nnet, images, labels, colored_images, colored_labels, fg_color, bg_color)
+    print('\n###############TESTING MNIST GRAY-SCALE###############\n')
+    test_gray(nnet, images, labels)
+    print('\n###############TESTING MNIST COLORED###############\n')
+    test_colored(nnet, colored_images, colored_labels, fg_color, bg_color)
 
     #### TESTING CODE FOR EMNIST ####
     emnist_images, emnist_labels = load_emnist()
     colored_emnist_images, colored_emnist_labels, emnist_fg_color, emnist_bg_color = add_colored_mnist(emnist_images, emnist_labels)
-    do_test(nnet, emnist_images, emnist_labels, colored_emnist_images, colored_emnist_labels, emnist_fg_color, emnist_bg_color)
+    print('\n###############TESTING EMNIST GRAY-SCALE###############\n')
+    test_gray(nnet, emnist_images, emnist_labels)
+    print('\n###############TESTING EMNIST COLORED###############\n')
+    test_colored(nnet, colored_emnist_images, colored_emnist_labels, emnist_fg_color, emnist_bg_color)
 
 
 
