@@ -85,18 +85,18 @@ def load_emnist():
 
 def add_colored_mnist(images, labels):
     n = images.shape[0]
-    fg_color = torch.rand(n, 3, 1, 1).numpy()*0.8+0.2
-    bg_color = torch.rand(n, 3, 1, 1).numpy()*0.8+0.2
-    mask = images[ :, 0:1, :, :]
-    colored_images = mask*fg_color + (1-mask)*bg_color
+    fg_color = torch.rand(n, 3, 1, 1).numpy() * 0.8 + 0.2
+    bg_color = torch.rand(n, 3, 1, 1).numpy() * 0.8 + 0.2
+    mask = images[:, 0:1, :, :]
+    colored_images = mask * fg_color + (1 - mask) * bg_color
     return colored_images, labels, fg_color, bg_color
 
-def random_rotate(images, max_angle=45, seed=None):
+
+def random_rotate(images, max_angle=45):
     """
     Rotates each image by a random angle in [-max_angle, max_angle] degrees.
     images: numpy ndarray, shape (N, 3, H, W)
-    labels: numpy ndarray, shape (N,) — passed through unchanged, returned for convenience
-    returns: rotated_images, labels, angles
+    returns: numpy ndarray, same shape, rotated
     """
     n = images.shape[0]
     angles = np.random.uniform(-max_angle, max_angle, size=n)
@@ -104,27 +104,51 @@ def random_rotate(images, max_angle=45, seed=None):
     rotated = np.empty_like(images)
     for i in range(n):
         rotated[i] = rotate(images[i], angle=angles[i], axes=(1, 2),
-                            reshape=False, order=1, mode='constant', cval=0.0)
+                             reshape=False, order=1, mode='constant', cval=0.0)
 
     return rotated
 
 
+def random_occlude(images, max_patches=2, max_patch_size=12):
+    """
+    Randomly occludes each image with 0-max_patches rectangular patches,
+    filled with a random solid color.
+    images: numpy ndarray, shape (N, 3, H, W)
+    returns: numpy ndarray, same shape
+    """
+    n, c, h, w = images.shape
+    occluded = images.copy()
+
+    for i in range(n):
+        num_patches = np.random.randint(0, max_patches + 1)
+        for _ in range(num_patches):
+            patch_h = np.random.randint(4, max_patch_size + 1)
+            patch_w = np.random.randint(4, max_patch_size + 1)
+
+            top = np.random.randint(0, max(1, h - patch_h))
+            left = np.random.randint(0, max(1, w - patch_w))
+
+            patch_color = np.random.rand(c, 1, 1)
+            occluded[i, :, top:top+patch_h, left:left+patch_w] = patch_color
+
+    return occluded
+
+
 def test_gray(nnet, images, labels):
-    # evaluate nnet for gray scale
     start_time = time.time()
-    nnet_out = nnet(torch.tensor(images, device="cpu")).data.cpu().numpy()
+    nnet_out = nnet(torch.tensor(images, dtype=torch.float32, device="cpu")).data.cpu().numpy()
     print(f"NNet time: {time.time() - start_time} seconds")
 
     for label in np.unique(labels):
         label_mask = labels == label
-        accuracy_label: float = 100.0 * np.mean(nnet_out[label_mask].argmax(axis=1) == labels[label_mask])
+        accuracy_label = 100.0 * np.mean(nnet_out[label_mask].argmax(axis=1) == labels[label_mask])
         print(f"Accuracy (for label {label} with {sum(label_mask)} examples): {accuracy_label:.2f}%")
 
-    accuracy: float = 100.0 * np.mean(nnet_out.argmax(axis=1) == labels)
+    accuracy = 100.0 * np.mean(nnet_out.argmax(axis=1) == labels)
     print(f"Accuracy (total with {labels.shape[0]} examples): {accuracy:.2f}%")
 
+
 def test_colored(nnet, colored_images, colored_labels, fg_color, bg_color):
-    # evaluate nnet for tinted mnist
     start_time = time.time()
     nnet_out = nnet(torch.tensor(colored_images, dtype=torch.float32, device="cpu")).data.cpu().numpy()
     print(f"NNet time: {time.time() - start_time} seconds")
@@ -133,13 +157,12 @@ def test_colored(nnet, colored_images, colored_labels, fg_color, bg_color):
 
     for label in np.unique(colored_labels):
         label_mask = colored_labels == label
-        accuracy_label_colored: float = 100.0 * np.mean(preds[label_mask] == colored_labels[label_mask])
-        print(f"Accuracy (for label {label} with {sum(label_mask)} examples): {accuracy_label_colored:.2f}%")
+        accuracy_label = 100.0 * np.mean(preds[label_mask] == colored_labels[label_mask])
+        print(f"Accuracy (for label {label} with {sum(label_mask)} examples): {accuracy_label:.2f}%")
 
-    accuracy_colored: float = 100.0 * np.mean(preds == colored_labels)
-    print(f"Accuracy (total with {colored_labels.shape[0]} examples): {accuracy_colored:.2f}%")
+    accuracy = 100.0 * np.mean(preds == colored_labels)
+    print(f"Accuracy (total with {colored_labels.shape[0]} examples): {accuracy:.2f}%")
 
-    # contrast-based breakdown
     contrast = np.abs(fg_color - bg_color).mean(axis=1).squeeze()
     quartiles = np.percentile(contrast, [25, 50, 75])
     q1_mask = contrast <= quartiles[0]
@@ -150,52 +173,49 @@ def test_colored(nnet, colored_images, colored_labels, fg_color, bg_color):
     print(f"bottom quartile contrast acc: {acc_q1:.2f}%, top quartile contrast acc: {acc_q4:.2f}%")
 
 
-def main():
-    parser: ArgumentParser = ArgumentParser()
-    parser.add_argument("--model", type=str, required=True)
-
-    parser.parse_args()
-    args = parser.parse_args()
-
-    torch.manual_seed(42)
-
-    # load nnet
-    nnet: nn.Module = get_model()
-    nnet = load_nnet(args.model, nnet)
-    nnet.eval()
-
-    #### TESTING CODE FOR MNIST ####
-    # load data
-    images, labels = load_mnist_validation()
+def run_full_eval(nnet, images, labels, dataset_name):
     colored_images, colored_labels, fg_color, bg_color = add_colored_mnist(images, labels)
     rotated_images = random_rotate(images)
     colored_rotated_images = random_rotate(colored_images)
-    print(type(rotated_images))
-    print(type(images))
-    print('\n###############TESTING MNIST GRAY-SCALE###############\n')
+    occluded_images = random_occlude(images)
+    occluded_rotated_images = random_occlude(rotated_images)
+
+    print(f'\n############### TESTING {dataset_name} GRAY-SCALE ###############\n')
     test_gray(nnet, images, labels)
-    print('\n###############TESTING ROTATED MNIST GRAY-SCALE###############\n')
+
+    print(f'\n############### TESTING {dataset_name} ROTATED ###############\n')
     test_gray(nnet, rotated_images, labels)
-    print('\n###############TESTING MNIST COLORED###############\n')
+
+    print(f'\n############### TESTING {dataset_name} OCCLUDED ###############\n')
+    test_gray(nnet, occluded_images, labels)
+
+    print(f'\n############### TESTING {dataset_name} OCCLUDED + ROTATED ###############\n')
+    test_gray(nnet, occluded_rotated_images, labels)
+
+    print(f'\n############### TESTING {dataset_name} COLORED ###############\n')
     test_colored(nnet, colored_images, colored_labels, fg_color, bg_color)
-    print('\n###############TESTING ROTATED MNIST COLORED###############\n')
+
+    print(f'\n############### TESTING {dataset_name} COLORED + ROTATED ###############\n')
     test_colored(nnet, colored_rotated_images, colored_labels, fg_color, bg_color)
 
-    #### TESTING CODE FOR EMNIST ####
+
+def main():
+    parser = ArgumentParser()
+    parser.add_argument("--model", type=str, required=True)
+    args = parser.parse_args()
+
+    torch.manual_seed(42)
+    np.random.seed(42)
+
+    nnet = get_model()
+    nnet = load_nnet(args.model, nnet)
+    nnet.eval()
+
+    images, labels = load_mnist_validation()
+    run_full_eval(nnet, images, labels, "MNIST")
+
     emnist_images, emnist_labels = load_emnist()
-    colored_emnist_images, colored_emnist_labels, emnist_fg_color, emnist_bg_color = add_colored_mnist(emnist_images, emnist_labels)
-    rotated_emnist_images = random_rotate(emnist_images)
-    colored_rotated_emnist_images = random_rotate(colored_emnist_images)
-    print('\n###############TESTING EMNIST GRAY-SCALE###############\n')
-    test_gray(nnet, emnist_images, emnist_labels)
-    print('\n###############TESTING ROTATED EMNIST GRAY-SCALE###############\n')
-    test_gray(nnet, rotated_emnist_images, emnist_labels)
-    print('\n###############TESTING EMNIST COLORED###############\n')
-    test_colored(nnet, colored_emnist_images, colored_emnist_labels, emnist_fg_color, emnist_bg_color)
-    print('\n###############TESTING EMNIST COLORED###############\n')
-    test_colored(nnet, colored_rotated_emnist_images, colored_emnist_labels, emnist_fg_color, emnist_bg_color)
-
-
+    run_full_eval(nnet, emnist_images, emnist_labels, "EMNIST")
 
 if __name__ == "__main__":
     main()
