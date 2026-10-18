@@ -3,12 +3,21 @@
     python train.py                  # full run (~5 h on an RTX 4060), writes hw2_model.pt (EMA weights) as it goes
     python train.py --resume         # continue from checkpoints/last.pt
 
-Every --eval_every steps it saves hw2_model.pt, a resumable checkpoint, and a grid of samples in previews/train/.
+    # fine-tune existing weights with hard cases (8s, white/black digits on photos) oversampled
+    python train.py --init hw2_model_v1.pt --hard_frac 0.3 --steps 20000 --lr 5e-5 --warmup 200 \
+        --out hw2_model_v2.pt --ckpt_dir checkpoints_ft --preview_dir previews/finetune
+
+    # v3: continue from v2, only training on photo backgrounds where the digit is clearly visible
+    python train.py --init hw2_model_v2.pt --hard_frac 0.3 --min_visibility 0.85 --steps 20000 --lr 5e-5 \
+        --warmup 200 --out hw2_model_v3.pt --ckpt_dir checkpoints_v3 --preview_dir previews/finetune_v3
+
+Every --eval_every steps it saves the --out weights, a resumable checkpoint, and a grid of samples.
 """
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from pathlib import Path
 from argparse import ArgumentParser
 import copy
+import itertools
 import math
 import time
 
@@ -37,6 +46,28 @@ def drop_conditions(labels: Dict[str, Tensor], p_drop: float, p_drop_all: float)
         labels["rotation"],
         ~dropped(),
     ]
+
+
+HARD_PAIRS: List[Tuple[int, int]] = [(DIGIT_COLORS.index(c), BACKGROUNDS.index(b))
+                                     for c, b in itertools.product(["white", "black"], ["classroom", "horseshoe"])]
+
+
+def sample_batch(synth: DigitSynthesizer, batch_size: int, hard_frac: float) -> Tuple[Tensor, Dict[str, Tensor]]:
+    """A training batch where hard_frac of the samples are hard cases: half of them 8s (everything else random),
+    half white or black digits on the photo backgrounds (any digit)."""
+    n_hard: int = int(batch_size * hard_frac)
+    n_eight: int = n_hard // 2
+    n_pair: int = n_hard - n_eight
+    parts: List[Tuple[Tensor, Dict[str, Tensor]]] = [synth.sample(batch_size - n_hard)]
+    if n_eight > 0:
+        parts.append(synth.sample(n_eight, digit=8))
+    for i, (color, background) in enumerate(HARD_PAIRS):
+        n: int = n_pair // len(HARD_PAIRS) + (1 if i < n_pair % len(HARD_PAIRS) else 0)
+        if n > 0:
+            parts.append(synth.sample(n, digit_color=color, background=background))
+    imgs: Tensor = torch.cat([p[0] for p in parts])
+    labels: Dict[str, Tensor] = {k: torch.cat([p[1][k] for p in parts]) for k in parts[0][1]}
+    return imgs, labels
 
 
 @torch.no_grad()
@@ -80,7 +111,12 @@ def main():
     parser.add_argument("--log_every", type=int, default=250)
     parser.add_argument("--out", type=str, default=str(HERE / "hw2_model.pt"))
     parser.add_argument("--ckpt_dir", type=str, default=str(HERE / "checkpoints"))
+    parser.add_argument("--preview_dir", type=str, default=str(HERE / "previews" / "train"))
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--init", type=str, default=None, help="start from these weights (a saved --out .pt)")
+    parser.add_argument("--hard_frac", type=float, default=0.0, help="fraction of each batch that is hard cases")
+    parser.add_argument("--min_visibility", type=float, default=0.0,
+                        help="re-pick photo crops until this fraction of the digit stroke stands out (0 = off)")
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
 
@@ -90,15 +126,18 @@ def main():
     torch.backends.cudnn.allow_tf32 = True
     torch.backends.cudnn.benchmark = True
 
-    synth: DigitSynthesizer = DigitSynthesizer(device, seed=args.seed)
+    synth: DigitSynthesizer = DigitSynthesizer(device, seed=args.seed, min_visibility=args.min_visibility)
     model: nn.Module = md.get_model().to(device)
+    if args.init is not None:
+        model.load_state_dict(torch.load(args.init, map_location=device, weights_only=True))
+        print(f"Initialized from {args.init}")
     ema: nn.Module = copy.deepcopy(model).eval().requires_grad_(False)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=0.0)
     ab_all: Tensor = md.alphas_cumprod(device)
 
     ckpt_dir: Path = Path(args.ckpt_dir)
     ckpt_dir.mkdir(parents=True, exist_ok=True)
-    preview_dir: Path = HERE / "previews" / "train"
+    preview_dir: Path = Path(args.preview_dir)
     preview_dir.mkdir(parents=True, exist_ok=True)
 
     step: int = 0
@@ -122,7 +161,7 @@ def main():
         for group in opt.param_groups:
             group["lr"] = lr
 
-        x0, labels = synth.sample(args.batch_size)
+        x0, labels = sample_batch(synth, args.batch_size, args.hard_frac)
         x0 = x0 * 2 - 1
         conds: List[Tensor] = drop_conditions(labels, args.p_drop, args.p_drop_all)
         t: Tensor = torch.randint(md.NUM_TIMESTEPS, (args.batch_size,), device=device)

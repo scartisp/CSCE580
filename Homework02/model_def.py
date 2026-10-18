@@ -23,7 +23,7 @@ MAX_ROTATION: float = 90.0
 
 NUM_TIMESTEPS: int = 1000
 SAMPLE_STEPS: int = 50
-GUIDANCE_SCALE: float = 2.0
+GUIDANCE_SCALE: float = 1.5
 
 
 # ---------------------------------------------------------------- network

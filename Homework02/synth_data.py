@@ -121,13 +121,23 @@ def rotate(imgs: Tensor, degrees: Tensor) -> Tensor:
     return F.grid_sample(imgs, grid, mode="bilinear", padding_mode="zeros", align_corners=False)
 
 
+def stroke_visibility(bg: Tensor, alpha: Tensor, fg: Tensor, min_dist: float = 0.25) -> Tensor:
+    """Fraction of the digit's stroke (weighted by alpha) lying on background pixels whose RGB distance from the
+    digit color, scaled to [0, 1], is at least min_dist. Leading dims are batch dims; the last three are (C, H, W),
+    with alpha having C = 1 and fg having H = W = 1."""
+    dist: Tensor = (bg - fg).pow(2).sum(dim=-3, keepdim=True).sqrt() / math.sqrt(3.0)
+    return (alpha * (dist >= min_dist).float()).sum(dim=(-3, -2, -1)) / alpha.sum(dim=(-3, -2, -1)).clamp(min=1e-6)
+
+
 class DigitSynthesizer:
     """Renders batches of colored, rotated MNIST digits on backgrounds, with their condition labels."""
 
     def __init__(self, device: torch.device, mnist_dir: Path = HERE.parent / "Homework01" / "data",
                  cache_path: Path = HERE / "data" / "background_crops.npz", crops_per_background: int = 30000,
-                 seed: int = 0, rebuild_cache: bool = False):
+                 seed: int = 0, rebuild_cache: bool = False, min_visibility: float = 0.0, visibility_tries: int = 8):
         self.device: torch.device = device
+        self.min_visibility: float = min_visibility
+        self.visibility_tries: int = visibility_tries
 
         imgs, labels = load_mnist(mnist_dir)
         order: NDArray = np.argsort(labels, kind="stable")  # group by class so a digit can be sampled uniformly
@@ -167,19 +177,30 @@ class DigitSynthesizer:
         """Composite: alpha * color + (1 - alpha) * background, with alpha the rotated MNIST intensity."""
         alpha: Tensor = rotate(self.digits[digit_idx].float().div(255.0).unsqueeze(1), rotation)
         fg: Tensor = self.colors[digit_color].view(-1, 3, 1, 1)
-        return alpha * fg + (1.0 - alpha) * self._backgrounds(background)
+        return alpha * fg + (1.0 - alpha) * self._backgrounds(background, alpha, fg)
 
-    def _backgrounds(self, background: Tensor) -> Tensor:
+    def _backgrounds(self, background: Tensor, alpha: Tensor, fg: Tensor) -> Tensor:
+        """Backgrounds for each sample. With min_visibility > 0, each photo background is the first of
+        visibility_tries random crops where at least min_visibility of the digit's stroke stands out from it (or the
+        most visible one if none does), so the digit never disappears into a same-colored part of the photo."""
         bg: Tensor = torch.ones(background.shape[0], 3, 28, 28, device=self.device)
         bg[background == BACKGROUNDS.index("black")] = 0.0
+        tries: int = self.visibility_tries if self.min_visibility > 0 else 1
         for name, bank in zip(PHOTO_BACKGROUNDS, self.photo_banks):
             mask: Tensor = background == BACKGROUNDS.index(name)
             n: int = int(mask.sum())
             if n == 0:
                 continue
-            crop_idx: Tensor = torch.randint(bank.shape[0], (n,), device=self.device)
-            brightness: Tensor = torch.empty(n, 1, 1, 1, device=self.device).uniform_(0.85, 1.15)
-            bg[mask] = (bank[crop_idx].float().div(255.0) * brightness).clamp(0.0, 1.0)
+            crop_idx: Tensor = torch.randint(bank.shape[0], (n, tries), device=self.device)
+            brightness: Tensor = torch.empty(n, tries, 1, 1, 1, device=self.device).uniform_(0.85, 1.15)
+            cands: Tensor = (bank[crop_idx].float().div(255.0) * brightness).clamp(0.0, 1.0)  # (n, tries, 3, 28, 28)
+            if tries == 1:
+                bg[mask] = cands[:, 0]
+                continue
+            visible: Tensor = stroke_visibility(cands, alpha[mask].unsqueeze(1), fg[mask].unsqueeze(1))  # (n, tries)
+            ok: Tensor = visible >= self.min_visibility
+            choice: Tensor = torch.where(ok.any(dim=1), ok.float().argmax(dim=1), visible.argmax(dim=1))
+            bg[mask] = cands[torch.arange(n, device=self.device), choice]
         return bg
 
     def _fill_or_sample(self, value: Optional[int], n_values: int, batch_size: int) -> Tensor:
