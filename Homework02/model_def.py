@@ -4,8 +4,9 @@ The network is a small U-Net trained with v-prediction on a cosine noise schedul
 color, background and rotation. Each condition has a learned "null" value used when it is not given (training drops
 conditions at random so the model learns these marginals). Images are sampled with DDIM and classifier-free guidance.
 """
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import math
+import random
 
 import torch
 from torch import nn, Tensor
@@ -217,6 +218,25 @@ def sample(model: nn.Module, conds: List[Tensor], steps: int = SAMPLE_STEPS,
 
 # ---------------------------------------------------------------- required interface
 
+def fill_missing_conditions(digit: Optional[int], digit_color: Optional[str], background: Optional[str],
+                            rotation: Optional[float]) -> Tuple[int, str, str, float]:
+    """Pick a random value for every condition that was not given.
+
+    Sampling the conditions first and then generating with guidance gives much sharper images than letting the
+    network fill in everything itself, with the same spread of digits, colors, backgrounds and angles. A random
+    color never matches a plain white/black background (and vice versa), since that digit would be invisible.
+    """
+    if digit is None:
+        digit = random.randrange(10)
+    if rotation is None:
+        rotation = random.uniform(-MAX_ROTATION, MAX_ROTATION)
+    if background is None:
+        background = random.choice([b for b in BACKGROUNDS if b != digit_color])
+    if digit_color is None:
+        digit_color = random.choice([c for c in DIGIT_COLORS if c != background])
+    return digit, digit_color, background, rotation
+
+
 def get_model() -> nn.Module:
     return UNet()
 
@@ -231,6 +251,7 @@ def generate_image(model: nn.Module, digit: Optional[int], digit_color: Optional
     if prompt is not None:  # prompts are not supported, and the spec says to ignore the other conditions then
         digit, digit_color, background, rotation = None, None, None, None
 
+    digit, digit_color, background, rotation = fill_missing_conditions(digit, digit_color, background, rotation)
     conds: List[Tensor] = condition_tensors(1, digit, digit_color, background, rotation, device)
     return sample(model, conds)[0].cpu().numpy()
 
