@@ -11,6 +11,11 @@
     python train.py --init hw2_model_v2.pt --hard_frac 0.3 --min_visibility 0.85 --steps 20000 --lr 5e-5 \
         --warmup 200 --out hw2_model_v3.pt --ckpt_dir checkpoints_v3 --preview_dir previews/finetune_v3
 
+    # v4: continue from v3 without ambiguous MNIST digits (run filter_mnist.py first)
+    python train.py --init hw2_model_v3.pt --hard_frac 0.3 --min_visibility 0.85 \
+        --mnist_subset data/mnist_clean_idx.npy --steps 20000 --lr 5e-5 --warmup 200 \
+        --out hw2_model_v4.pt --ckpt_dir checkpoints_v4 --preview_dir previews/finetune_v4
+
 Every --eval_every steps it saves the --out weights, a resumable checkpoint, and a grid of samples.
 """
 from typing import Dict, List, Tuple
@@ -117,6 +122,8 @@ def main():
     parser.add_argument("--hard_frac", type=float, default=0.0, help="fraction of each batch that is hard cases")
     parser.add_argument("--min_visibility", type=float, default=0.0,
                         help="re-pick photo crops until this fraction of the digit stroke stands out (0 = off)")
+    parser.add_argument("--mnist_subset", type=str, default=None,
+                        help="train only on these MNIST indices, e.g. data/mnist_clean_idx.npy (default: all)")
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
 
@@ -126,7 +133,8 @@ def main():
     torch.backends.cudnn.allow_tf32 = True
     torch.backends.cudnn.benchmark = True
 
-    synth: DigitSynthesizer = DigitSynthesizer(device, seed=args.seed, min_visibility=args.min_visibility)
+    synth: DigitSynthesizer = DigitSynthesizer(device, seed=args.seed, min_visibility=args.min_visibility,
+                                               mnist_subset=args.mnist_subset)
     model: nn.Module = md.get_model().to(device)
     if args.init is not None:
         model.load_state_dict(torch.load(args.init, map_location=device, weights_only=True))

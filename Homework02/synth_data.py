@@ -134,12 +134,16 @@ class DigitSynthesizer:
 
     def __init__(self, device: torch.device, mnist_dir: Path = HERE.parent / "Homework01" / "data",
                  cache_path: Path = HERE / "data" / "background_crops.npz", crops_per_background: int = 30000,
-                 seed: int = 0, rebuild_cache: bool = False, min_visibility: float = 0.0, visibility_tries: int = 8):
+                 seed: int = 0, rebuild_cache: bool = False, min_visibility: float = 0.0, visibility_tries: int = 8,
+                 mnist_subset: Optional[Path] = None):
         self.device: torch.device = device
         self.min_visibility: float = min_visibility
         self.visibility_tries: int = visibility_tries
 
         imgs, labels = load_mnist(mnist_dir)
+        if mnist_subset is not None:  # indices of the MNIST digits to keep (see filter_mnist.py)
+            keep: NDArray = np.load(mnist_subset)
+            imgs, labels = imgs[keep], labels[keep]
         order: NDArray = np.argsort(labels, kind="stable")  # group by class so a digit can be sampled uniformly
         self.digits: Tensor = torch.from_numpy(imgs[order]).to(device)
         counts: NDArray = np.bincount(labels, minlength=10)
