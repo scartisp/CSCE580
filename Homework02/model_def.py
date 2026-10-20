@@ -3,10 +3,13 @@
 The network is a small U-Net trained with v-prediction on a cosine noise schedule. It is conditioned on digit, digit
 color, background and rotation. Each condition has a learned "null" value used when it is not given (training drops
 conditions at random so the model learns these marginals). Images are sampled with DDIM and classifier-free guidance.
+
+For the extra credit, parse_prompt turns a free-text prompt into those same conditions (see the prompt section).
 """
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 import math
 import random
+import re
 
 import torch
 from torch import nn, Tensor
@@ -237,6 +240,137 @@ def fill_missing_conditions(digit: Optional[int], digit_color: Optional[str], ba
     return digit, digit_color, background, rotation
 
 
+# ---------------------------------------------------------------- prompts (extra credit)
+
+NUMBER_WORDS: Dict[str, int] = {"zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7,
+                                "eight": 8, "nine": 9}
+COLOR_WORDS: Dict[str, str] = {
+    "white": "white", "ivory": "white",
+    "black": "black", "ebony": "black",
+    "red": "red", "garnet": "red", "crimson": "red", "scarlet": "red", "maroon": "red", "cardinal": "red",
+    "blue": "blue", "navy": "blue", "azure": "blue", "cobalt": "blue", "royal blue": "blue",
+    "green": "green", "emerald": "green", "lime": "green", "forest green": "green",
+}
+# phrases naming each background; matched as whole words, longest phrase first
+LOCATION_WORDS: Dict[str, List[str]] = {
+    "horseshoe": ["horseshoe", "the shoe", "historic horseshoe", "maxcy monument", "rutledge chapel",
+                  "mckissick museum", "president's house", "presidents house"],
+    "classroom": ["classroom", "class room", "lecture hall", "lecture room", "our class", "in class",
+                  "csce 580", "csce580", "where we have class"],
+}
+ROTATION_WORDS: Dict[str, float] = {"upright": 0.0, "straight up": 0.0, "not rotated": 0.0, "unrotated": 0.0,
+                                    "level": 0.0}
+TILT_DEGREES: float = 30.0
+SLIGHT_TILT_DEGREES: float = 15.0
+PROMPT_DEFAULT_TILT: float = 15.0  # max random tilt when a prompt does not mention rotation
+
+
+def _remove(text: str, match: re.Match) -> str:
+    return text[:match.start()] + " " + text[match.end():]
+
+
+def _parse_rotation(text: str) -> Tuple[Optional[float], str]:
+    """Rotation in degrees (positive = counter-clockwise) and the prompt with the rotation phrase removed."""
+    # explicit angle, e.g. "rotated 45 degrees clockwise", "tilted -30°", "at a 60 degree angle to the left"
+    m = re.search(r"(-?\d+(?:\.\d+)?)\s*(?:°|degrees?|deg\b)"
+                  r"(?:\s*(?:angle\s*)?(?:to\s*the\s*|towards?\s*the\s*)?"
+                  r"(counter[\s-]?clockwise|anti[\s-]?clockwise|clockwise|left|right|ccw|cw)\b)?", text)
+    if m is not None:
+        angle: float = float(m.group(1))
+        direction: Optional[str] = m.group(2)
+        if direction is None:  # direction may come before the angle: "turned left 45 degrees"
+            before: str = text[max(0, m.start() - 40):m.start()]
+            dirs = re.findall(r"(counter[\s-]?clockwise|anti[\s-]?clockwise|clockwise|left|right)", before)
+            direction = dirs[-1] if dirs else None
+        if direction is not None:
+            ccw: bool = direction.startswith(("counter", "anti", "ccw", "left"))
+            angle = abs(angle) if ccw else -abs(angle)
+        return max(-MAX_ROTATION, min(MAX_ROTATION, angle)), _remove(text, m)
+
+    for phrase, angle in ROTATION_WORDS.items():
+        m = re.search(rf"\b{re.escape(phrase)}\b", text)
+        if m is not None:
+            return angle, _remove(text, m)
+
+    # "sideways", "on its side", "lying down": a quarter turn either way
+    m = re.search(r"\b(sideways|on (?:its|it's|his|her|their) side|lying down|laying down|horizontal(?:ly)?)\b", text)
+    if m is not None:
+        return random.choice([-MAX_ROTATION, MAX_ROTATION]), _remove(text, m)
+
+    # "tilted left", "leaning to the right", "slightly slanted"
+    m = re.search(r"\b(slightly |a little |a bit )?(tilt(?:ed|ing)?|lean(?:s|ed|ing)?|slant(?:ed|ing)?|tipped|"
+                  r"crooked|rotated|turned|askew)\b(?:\s*(?:to\s*the\s*|towards?\s*the\s*)?"
+                  r"(left|right|counter[\s-]?clockwise|anti[\s-]?clockwise|clockwise))?", text)
+    if m is not None:
+        size: float = SLIGHT_TILT_DEGREES if m.group(1) else TILT_DEGREES
+        direction = m.group(3)
+        if direction is None:
+            return random.choice([-size, size]), _remove(text, m)
+        ccw = direction.startswith(("counter", "anti", "left"))
+        return (size if ccw else -size), _remove(text, m)
+    return None, text
+
+
+def _parse_background(text: str) -> Tuple[Optional[str], str]:
+    """Background name and the prompt with the background phrase removed."""
+    # plain backgrounds: "white background", "on a black backdrop", "background is white", "on plain white"
+    m = re.search(r"\b(white|black)\s+(?:background|backdrop|backround|bg)\b", text)
+    if m is None:
+        m = re.search(r"\b(?:background|backdrop)\s+(?:is\s+|of\s+)?(?:plain\s+|solid\s+|all\s+)?(white|black)\b", text)
+    if m is None:
+        m = re.search(r"\bon\s+(?:a\s+)?(?:plain|solid|blank|empty)\s+(white|black)\b", text)
+    if m is not None:
+        return m.group(1), _remove(text, m)
+
+    phrases: List[Tuple[str, str]] = sorted(((p, name) for name, ps in LOCATION_WORDS.items() if name in BACKGROUNDS
+                                             for p in ps), key=lambda pn: -len(pn[0]))
+    for phrase, name in phrases:
+        m = re.search(rf"\b{re.escape(phrase)}\b", text)
+        if m is not None:
+            return name, _remove(text, m)
+    return None, text
+
+
+def _parse_color(text: str) -> Tuple[Optional[str], str]:
+    """Digit color named first in the prompt, and the prompt with it removed."""
+    best: Optional[re.Match] = None
+    best_color: Optional[str] = None
+    for word, color in COLOR_WORDS.items():
+        m = re.search(rf"\b{re.escape(word)}\b", text)
+        if m is not None and (best is None or m.start() < best.start()):
+            best, best_color = m, color
+    return (best_color, _remove(text, best)) if best is not None else (None, text)
+
+
+def _parse_digit(text: str) -> Optional[int]:
+    """A single digit written as a numeral ("a 5", "#7") or a word ("seven"). 'one' is only used if nothing else
+    matches, since it is often not a number ("one of the desks")."""
+    m = re.search(r"(?<![\d.])(\d)(?![\d.])", text)
+    if m is not None:
+        return int(m.group(1))
+    words: List[Tuple[int, int]] = [(m.start(), NUMBER_WORDS[w]) for w in NUMBER_WORDS if w != "one"
+                                    for m in [re.search(rf"\b{w}\b", text)] if m is not None]
+    if words:
+        return min(words)[1]
+    return 1 if re.search(r"\bone\b", text) else None
+
+
+def parse_prompt(prompt: str) -> Tuple[Optional[int], Optional[str], Optional[str], Optional[float]]:
+    """Turn a free-text prompt into (digit, digit_color, background, rotation); anything not mentioned is None.
+
+    Rotation and background phrases are parsed (and removed) first, so "rotated 45 degrees" is not read as a digit
+    and "black background" is not read as a black digit.
+    """
+    text: str = " " + prompt.lower().replace("’", "'") + " "
+    rotation, text = _parse_rotation(text)
+    background, text = _parse_background(text)
+    digit_color, text = _parse_color(text)
+    digit: Optional[int] = _parse_digit(text)
+    return digit, digit_color, background, rotation
+
+
+# ---------------------------------------------------------------- required interface
+
 def get_model() -> nn.Module:
     return UNet()
 
@@ -248,8 +382,10 @@ def generate_image(model: nn.Module, digit: Optional[int], digit_color: Optional
         model.to(device)
     model.eval()
 
-    if prompt is not None:  # prompts are not supported, and the spec says to ignore the other conditions then
-        digit, digit_color, background, rotation = None, None, None, None
+    if prompt is not None:  # the prompt replaces the other conditions
+        digit, digit_color, background, rotation = parse_prompt(prompt)
+        if rotation is None:  # a scene description implies a roughly upright digit
+            rotation = random.uniform(-PROMPT_DEFAULT_TILT, PROMPT_DEFAULT_TILT)
 
     digit, digit_color, background, rotation = fill_missing_conditions(digit, digit_color, background, rotation)
     conds: List[Tensor] = condition_tensors(1, digit, digit_color, background, rotation, device)
