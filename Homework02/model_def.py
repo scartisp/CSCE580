@@ -27,7 +27,7 @@ NULL_BACKGROUND: int = len(BACKGROUNDS)
 MAX_ROTATION: float = 90.0
 
 NUM_TIMESTEPS: int = 1000
-SAMPLE_STEPS: int = 50
+SAMPLE_STEPS: int = 30  # tested as good as 50 steps, and keeps CPU-only generation of 9 images around 9 s
 GUIDANCE_SCALE: float = 1.5
 
 
