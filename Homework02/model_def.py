@@ -18,7 +18,9 @@ import torch.nn.functional as F
 from numpy.typing import NDArray
 
 DIGIT_COLORS: List[str] = ["white", "black", "red", "blue", "green"]
-BACKGROUNDS: List[str] = ["white", "black", "classroom", "horseshoe"]
+BACKGROUNDS: List[str] = ["white", "black", "classroom", "horseshoe", "library", "russell", "cocky"]
+# backgrounds the assignment's --background option allows; the rest are extra-credit locations only used for prompts
+STANDARD_BACKGROUNDS: List[str] = ["white", "black", "classroom", "horseshoe"]
 NULL_DIGIT: int = 10
 NULL_COLOR: int = len(DIGIT_COLORS)
 NULL_BACKGROUND: int = len(BACKGROUNDS)
@@ -234,7 +236,7 @@ def fill_missing_conditions(digit: Optional[int], digit_color: Optional[str], ba
     if rotation is None:
         rotation = random.uniform(-MAX_ROTATION, MAX_ROTATION)
     if background is None:
-        background = random.choice([b for b in BACKGROUNDS if b != digit_color])
+        background = random.choice([b for b in STANDARD_BACKGROUNDS if b != digit_color])
     if digit_color is None:
         digit_color = random.choice([c for c in DIGIT_COLORS if c != background])
     return digit, digit_color, background, rotation
@@ -257,7 +259,13 @@ LOCATION_WORDS: Dict[str, List[str]] = {
                   "mckissick museum", "president's house", "presidents house"],
     "classroom": ["classroom", "class room", "lecture hall", "lecture room", "our class", "in class",
                   "csce 580", "csce580", "where we have class"],
+    "library": ["thomas cooper library", "thomas cooper", "cooper library", "tcl", "library", "the library"],
+    "russell": ["russell house", "russell", "student union", "the union"],
+    "cocky": ["cocky statue", "statue of cocky", "cocky's statue", "cocky on a bench", "cocky on the bench",
+              "gamecock statue", "mascot statue", "statue"],
 }
+# the mascot alone means the Cocky statue only when no other place is named ("Cocky ... at Thomas Cooper Library")
+MASCOT_WORDS: List[str] = ["cocky", "mascot", "gamecock", "gamecocks"]
 ROTATION_WORDS: Dict[str, float] = {"upright": 0.0, "straight up": 0.0, "not rotated": 0.0, "unrotated": 0.0,
                                     "level": 0.0}
 TILT_DEGREES: float = 30.0
@@ -328,6 +336,11 @@ def _parse_background(text: str) -> Tuple[Optional[str], str]:
         m = re.search(rf"\b{re.escape(phrase)}\b", text)
         if m is not None:
             return name, _remove(text, m)
+    if "cocky" in BACKGROUNDS:
+        for word in MASCOT_WORDS:
+            m = re.search(rf"\b{re.escape(word)}\b", text)
+            if m is not None:
+                return "cocky", _remove(text, m)
     return None, text
 
 

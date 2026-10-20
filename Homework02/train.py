@@ -16,6 +16,11 @@
         --mnist_subset data/mnist_clean_idx.npy --steps 20000 --lr 5e-5 --warmup 200 \
         --out hw2_model_v4.pt --ckpt_dir checkpoints_v4 --preview_dir previews/finetune_v4
 
+    # v5: continue from v4 with the library, russell and cocky backgrounds added (the embedding grows on load)
+    python train.py --init hw2_model_v4.pt --hard_frac 0.3 --min_visibility 0.85 \
+        --mnist_subset data/mnist_clean_idx.npy --steps 25000 --lr 5e-5 --warmup 200 \
+        --out hw2_model_v5.pt --ckpt_dir checkpoints_v5 --preview_dir previews/finetune_v5
+
 Every --eval_every steps it saves the --out weights, a resumable checkpoint, and a grid of samples.
 """
 from typing import Dict, List, Tuple
@@ -31,7 +36,7 @@ from torch import nn, Tensor
 import torch.nn.functional as F
 
 import model_def as md
-from synth_data import DigitSynthesizer, save_grid, DIGIT_COLORS, BACKGROUNDS, HERE
+from synth_data import DigitSynthesizer, save_grid, DIGIT_COLORS, BACKGROUNDS, PHOTO_BACKGROUNDS, HERE
 
 
 def drop_conditions(labels: Dict[str, Tensor], p_drop: float, p_drop_all: float) -> List[Tensor]:
@@ -54,7 +59,29 @@ def drop_conditions(labels: Dict[str, Tensor], p_drop: float, p_drop_all: float)
 
 
 HARD_PAIRS: List[Tuple[int, int]] = [(DIGIT_COLORS.index(c), BACKGROUNDS.index(b))
-                                     for c, b in itertools.product(["white", "black"], ["classroom", "horseshoe"])]
+                                     for c, b in itertools.product(["white", "black"], PHOTO_BACKGROUNDS)]
+
+
+def load_init_weights(model: nn.Module, path: str) -> None:
+    """Load weights saved by an earlier run, growing the background embedding if BACKGROUNDS has gained entries.
+
+    Old backgrounds keep their rows, the old null row moves to the new null index, and each new background starts as
+    the average of the old photo backgrounds (so it begins as "some photo" and only has to learn what is specific).
+    """
+    state: Dict[str, Tensor] = torch.load(path, map_location="cpu", weights_only=True)
+    key: str = "cond_emb.background.weight"
+    old: Tensor = state[key]
+    new_rows: int = md.NULL_BACKGROUND + 1
+    if old.shape[0] != new_rows:
+        n_old: int = old.shape[0] - 1  # backgrounds in the old model; its last row is null
+        grown: Tensor = torch.empty(new_rows, old.shape[1])
+        grown[:n_old] = old[:n_old]
+        old_photos: List[int] = [BACKGROUNDS.index(b) for b in PHOTO_BACKGROUNDS if BACKGROUNDS.index(b) < n_old]
+        grown[n_old:md.NULL_BACKGROUND] = old[old_photos].mean(dim=0)
+        grown[md.NULL_BACKGROUND] = old[n_old]
+        state[key] = grown
+        print(f"Grew background embedding from {n_old} to {md.NULL_BACKGROUND} backgrounds")
+    model.load_state_dict(state)
 
 
 def sample_batch(synth: DigitSynthesizer, batch_size: int, hard_frac: float) -> Tuple[Tensor, Dict[str, Tensor]]:
@@ -137,7 +164,7 @@ def main():
                                                mnist_subset=args.mnist_subset)
     model: nn.Module = md.get_model().to(device)
     if args.init is not None:
-        model.load_state_dict(torch.load(args.init, map_location=device, weights_only=True))
+        load_init_weights(model, args.init)
         print(f"Initialized from {args.init}")
     ema: nn.Module = copy.deepcopy(model).eval().requires_grad_(False)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=0.0)

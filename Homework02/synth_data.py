@@ -26,8 +26,9 @@ from PIL import Image, ImageOps
 HERE: Path = Path(__file__).resolve().parent
 
 DIGIT_COLORS: List[str] = ["white", "black", "red", "blue", "green"]
-BACKGROUNDS: List[str] = ["white", "black", "classroom", "horseshoe"]
-PHOTO_BACKGROUNDS: List[str] = ["classroom", "horseshoe"]
+# the last three are extra-credit locations, only used when a prompt names them
+BACKGROUNDS: List[str] = ["white", "black", "classroom", "horseshoe", "library", "russell", "cocky"]
+PHOTO_BACKGROUNDS: List[str] = ["classroom", "horseshoe", "library", "russell", "cocky"]
 COLOR_RGB: Tensor = torch.tensor([[1.0, 1.0, 1.0], [0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0]])
 MAX_ROTATION: float = 90.0
 PHOTO_EXTS: Tuple[str, ...] = (".jpg", ".jpeg", ".png")

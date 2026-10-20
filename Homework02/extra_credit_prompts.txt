@@ -1,0 +1,52 @@
+Extra credit: prompts the model can handle
+==========================================
+
+When a prompt is given, generate_image ignores the other arguments and reads the prompt for the same four
+things the model is conditioned on: digit, digit color, background and rotation. The trained network then
+generates the image from those conditions. Besides the four standard backgrounds, the model was also trained
+on three more USC locations (Thomas Cooper Library, Russell House, the Cocky statue) that only prompts can
+ask for. Anything the prompt does not mention is chosen at random (except rotation, which defaults to nearly
+upright, within 15 degrees). Words the model has no concept of (e.g.
+"Cocky", "holding") are ignored, so a prompt still produces the parts it understands.
+
+Digit
+  - Numerals: "a 5", "the number 3", "#7", "digit 4"
+  - Words: "zero" ... "nine" ("one" only counts if no other number appears, so "one of the students wrote
+    a 7" gives a 7)
+  - Multi-digit numbers ("15 students") are not read as a digit.
+
+Digit color
+  - red, blue, green, white, black
+  - USC / synonym colors: garnet, crimson, scarlet, maroon, cardinal -> red; navy, azure, cobalt -> blue;
+    emerald, lime -> green; ivory -> white; ebony -> black
+  - If several colors appear ("garnet and black 4"), the first one is used.
+
+Background
+  - The Horseshoe: "Horseshoe", "the Shoe", "Historic Horseshoe", "Maxcy Monument", "Rutledge Chapel",
+    "McKissick Museum", "President's House"
+  - The CSCE 580 classroom: "classroom", "lecture hall", "our class", "in class", "CSCE 580"
+  - Thomas Cooper Library: "Thomas Cooper Library", "Thomas Cooper", "Cooper Library", "TCL", "the library"
+  - Russell House: "Russell House", "Russell", "student union", "the union"
+  - The Cocky statue: "Cocky statue", "statue of Cocky", "Cocky's statue", "Cocky on a bench", "Gamecock statue".
+    "Cocky", "mascot" or "Gamecock" on their own also mean the statue, but only when no other place is named,
+    so "Cocky ... at Thomas Cooper Library" is set at the library.
+  (The library, Russell House and Cocky statue backgrounds were trained from photos taken at night, so they
+  look like those places at night.)
+  - Plain backgrounds: "white background", "on a black backdrop", "background is white", "on plain black"
+  - "black background" sets the background, not the digit color.
+
+Rotation (positive = counter-clockwise, limited to -90..90 degrees)
+  - Exact angles: "rotated 45 degrees", "tilted -30°", "45 degrees clockwise", "turned left 60 degrees",
+    "at a 50 degree angle to the right"
+  - Words: "tilted / leaning / slanted left|right" (30 degrees), "slightly tilted ..." (15 degrees),
+    "sideways", "on its side", "lying down" (90 degrees), "upright" / "not rotated" (0 degrees)
+
+Example prompts
+  - "Cocky the mascot holding a 5 at Thomas Cooper Library"     -> a 5 at Thomas Cooper Library, random color
+  - "a garnet 3 in front of Russell House"                      -> red 3, Russell House
+  - "Cocky holding a blue 7"                                    -> blue 7, Cocky statue
+  - "a garnet 7 on the Horseshoe tilted 30 degrees"             -> red 7, Horseshoe, 30 degrees
+  - "A blue eight in our CSCE 580 classroom"                    -> blue 8, classroom
+  - "the number 3 rotated 45 degrees clockwise on a black background" -> 3, black background, -45 degrees
+  - "Cocky holding a garnet and black 4 in front of Rutledge Chapel"  -> red 4, Horseshoe
+  - "a 6 lying on its side at the Maxcy Monument"               -> 6, Horseshoe, 90 degrees
