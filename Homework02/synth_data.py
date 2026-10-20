@@ -130,16 +130,29 @@ def stroke_visibility(bg: Tensor, alpha: Tensor, fg: Tensor, min_dist: float = 0
     return (alpha * (dist >= min_dist).float()).sum(dim=(-3, -2, -1)) / alpha.sum(dim=(-3, -2, -1)).clamp(min=1e-6)
 
 
+def stroke_clutter(bg: Tensor, alpha: Tensor, fg: Tensor, near_dist: float = 0.25, radius: int = 3) -> Tensor:
+    """Fraction of the background just around the digit (within radius pixels of the stroke, but not under it) whose
+    color is within near_dist of the digit color. Such pixels look like extra strokes, e.g. the classroom's black
+    wall stripe next to a black digit. Same shape conventions as stroke_visibility."""
+    dist: Tensor = (bg - fg).pow(2).sum(dim=-3, keepdim=True).sqrt() / math.sqrt(3.0)
+    flat: Tensor = alpha.reshape(-1, 1, *alpha.shape[-2:])
+    near: Tensor = F.max_pool2d((flat > 0.3).float(), 2 * radius + 1, stride=1, padding=radius)
+    ring: Tensor = (near * (flat < 0.05).float()).reshape(alpha.shape)
+    return (ring * (dist < near_dist).float()).sum(dim=(-3, -2, -1)) / ring.sum(dim=(-3, -2, -1)).clamp(min=1.0)
+
+
 class DigitSynthesizer:
     """Renders batches of colored, rotated MNIST digits on backgrounds, with their condition labels."""
 
     def __init__(self, device: torch.device, mnist_dir: Path = HERE.parent / "Homework01" / "data",
                  cache_path: Path = HERE / "data" / "background_crops.npz", crops_per_background: int = 30000,
                  seed: int = 0, rebuild_cache: bool = False, min_visibility: float = 0.0, visibility_tries: int = 8,
-                 mnist_subset: Optional[Path] = None):
+                 visibility_dist: float = 0.25, max_clutter: float = 1.0, mnist_subset: Optional[Path] = None):
         self.device: torch.device = device
         self.min_visibility: float = min_visibility
         self.visibility_tries: int = visibility_tries
+        self.visibility_dist: float = visibility_dist
+        self.max_clutter: float = max_clutter
 
         imgs, labels = load_mnist(mnist_dir)
         if mnist_subset is not None:  # indices of the MNIST digits to keep (see filter_mnist.py)
@@ -185,12 +198,13 @@ class DigitSynthesizer:
         return alpha * fg + (1.0 - alpha) * self._backgrounds(background, alpha, fg)
 
     def _backgrounds(self, background: Tensor, alpha: Tensor, fg: Tensor) -> Tensor:
-        """Backgrounds for each sample. With min_visibility > 0, each photo background is the first of
-        visibility_tries random crops where at least min_visibility of the digit's stroke stands out from it (or the
-        most visible one if none does), so the digit never disappears into a same-colored part of the photo."""
+        """Backgrounds for each sample. With the filter on (min_visibility > 0 or max_clutter < 1), each photo
+        background is the first of visibility_tries random crops where at least min_visibility of the digit's stroke
+        differs from it by visibility_dist and at most max_clutter of the area around the digit is digit-colored (or
+        the best of them if none passes), so the digit neither disappears into the photo nor picks up fake strokes."""
         bg: Tensor = torch.ones(background.shape[0], 3, 28, 28, device=self.device)
         bg[background == BACKGROUNDS.index("black")] = 0.0
-        tries: int = self.visibility_tries if self.min_visibility > 0 else 1
+        tries: int = self.visibility_tries if self.min_visibility > 0 or self.max_clutter < 1 else 1
         for name, bank in zip(PHOTO_BACKGROUNDS, self.photo_banks):
             mask: Tensor = background == BACKGROUNDS.index(name)
             n: int = int(mask.sum())
@@ -202,9 +216,16 @@ class DigitSynthesizer:
             if tries == 1:
                 bg[mask] = cands[:, 0]
                 continue
-            visible: Tensor = stroke_visibility(cands, alpha[mask].unsqueeze(1), fg[mask].unsqueeze(1))  # (n, tries)
+            a: Tensor = alpha[mask].unsqueeze(1)
+            c: Tensor = fg[mask].unsqueeze(1)
+            visible: Tensor = stroke_visibility(cands, a, c, self.visibility_dist)  # (n, tries)
             ok: Tensor = visible >= self.min_visibility
-            choice: Tensor = torch.where(ok.any(dim=1), ok.float().argmax(dim=1), visible.argmax(dim=1))
+            score: Tensor = visible
+            if self.max_clutter < 1:
+                clutter: Tensor = stroke_clutter(cands, a, c)
+                ok &= clutter <= self.max_clutter
+                score = visible - clutter
+            choice: Tensor = torch.where(ok.any(dim=1), ok.float().argmax(dim=1), score.argmax(dim=1))
             bg[mask] = cands[torch.arange(n, device=self.device), choice]
         return bg
 

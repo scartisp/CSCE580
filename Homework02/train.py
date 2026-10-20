@@ -21,6 +21,11 @@
         --mnist_subset data/mnist_clean_idx.npy --steps 25000 --lr 5e-5 --warmup 200 \
         --out hw2_model_v5.pt --ckpt_dir checkpoints_v5 --preview_dir previews/finetune_v5
 
+    # v6: continue from v5 with a stricter filter (stronger stroke contrast, no digit-colored clutter next to it)
+    python train.py --init hw2_model_v5.pt --hard_frac 0.3 --min_visibility 0.85 --visibility_dist 0.4 \
+        --max_clutter 0.1 --visibility_tries 16 --mnist_subset data/mnist_clean_idx.npy --steps 20000 --lr 5e-5 \
+        --warmup 200 --out hw2_model_v6.pt --ckpt_dir checkpoints_v6 --preview_dir previews/finetune_v6
+
 Every --eval_every steps it saves the --out weights, a resumable checkpoint, and a grid of samples.
 """
 from typing import Dict, List, Tuple
@@ -149,6 +154,11 @@ def main():
     parser.add_argument("--hard_frac", type=float, default=0.0, help="fraction of each batch that is hard cases")
     parser.add_argument("--min_visibility", type=float, default=0.0,
                         help="re-pick photo crops until this fraction of the digit stroke stands out (0 = off)")
+    parser.add_argument("--visibility_dist", type=float, default=0.25,
+                        help="color distance (0-1) a stroke pixel needs from the background to count as standing out")
+    parser.add_argument("--max_clutter", type=float, default=1.0,
+                        help="max fraction of digit-colored background around the digit (1 = off)")
+    parser.add_argument("--visibility_tries", type=int, default=8, help="crops tried per sample by the filter")
     parser.add_argument("--mnist_subset", type=str, default=None,
                         help="train only on these MNIST indices, e.g. data/mnist_clean_idx.npy (default: all)")
     parser.add_argument("--seed", type=int, default=0)
@@ -161,7 +171,8 @@ def main():
     torch.backends.cudnn.benchmark = True
 
     synth: DigitSynthesizer = DigitSynthesizer(device, seed=args.seed, min_visibility=args.min_visibility,
-                                               mnist_subset=args.mnist_subset)
+                                               visibility_dist=args.visibility_dist, max_clutter=args.max_clutter,
+                                               visibility_tries=args.visibility_tries, mnist_subset=args.mnist_subset)
     model: nn.Module = md.get_model().to(device)
     if args.init is not None:
         load_init_weights(model, args.init)
