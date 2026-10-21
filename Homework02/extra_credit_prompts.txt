@@ -21,9 +21,9 @@ within 15 degrees).
 What the model can draw
   - Digits 0-9 (MNIST handwriting) in red, blue, green, white or black, rotated -90..90 degrees.
   - Backgrounds: plain white, plain black, the CSCE 580 classroom, the Horseshoe, and three more USC places
-    trained from our own photos: Thomas Cooper Library, Russell House and the Cocky statue (these three were
+    trained from my own photos: Thomas Cooper Library, Russell House and the Cocky statue (these three were
     photographed at night, so they look like those places at night).
-  - Cocky the mascot holding the digit: a small cartoon Cocky (red comb, white head, yellow beak, garnet body)
+  - Cocky the mascot holding the digit: a small cartoon Cocky
     standing on one side of the image with the digit, made smaller, next to his wing. It can appear on any
     background, so "Cocky the mascot holding a 5 at Thomas Cooper Library" draws exactly that.
 

@@ -8,6 +8,10 @@ For the extra credit, the network is also conditioned on whether Cocky the masco
 parse_prompt turns a free-text prompt into these conditions using keywords plus a pretrained sentence encoder
 (all-MiniLM-L6-v2, re-implemented here in PyTorch; see the text encoder section).
 """
+
+"""
+Written with Claude Code
+"""
 from typing import Dict, List, Optional, Tuple
 import math
 import random
