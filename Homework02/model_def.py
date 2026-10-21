@@ -448,7 +448,8 @@ LOCATION_MATCH: float = 0.67
 MASCOT_MATCH: float = 0.6
 STOPWORDS: set = {"a", "an", "the", "at", "in", "on", "of", "to", "by", "with", "and", "is", "it", "its", "near",
                   "next", "front", "behind", "outside", "inside", "holding", "holds", "number", "digit", "numeral",
-                  "picture", "image", "photo", "drawing", "standing", "sitting", "from", "for", "as", "up", "this"}
+                  "picture", "image", "photo", "drawing", "standing", "sitting", "from", "for", "as", "up", "this",
+                  "student", "students", "wrote", "write", "writes", "written"}
 ROTATION_WORDS: Dict[str, float] = {"upright": 0.0, "straight up": 0.0, "not rotated": 0.0, "unrotated": 0.0,
                                     "level": 0.0}
 TILT_DEGREES: float = 30.0
