@@ -26,6 +26,13 @@
         --max_clutter 0.1 --visibility_tries 16 --mnist_subset data/mnist_clean_idx.npy --steps 20000 --lr 5e-5 \
         --warmup 200 --out hw2_model_v6.pt --ckpt_dir checkpoints_v6 --preview_dir previews/finetune_v6
 
+    # v7: continue from v6, adding Cocky holding the digit in 30% of images. This writes only the image network;
+    # build_submission.py combines it with the text encoder into the submitted hw2_model_v7.pt
+    python train.py --init hw2_model_v6.pt --p_mascot 0.3 --hard_frac 0.3 --min_visibility 0.85 \
+        --visibility_dist 0.4 --max_clutter 0.1 --visibility_tries 16 --mnist_subset data/mnist_clean_idx.npy \
+        --steps 15000 --lr 5e-5 --warmup 200 --out hw2_unet_v7.pt --ckpt_dir checkpoints_v7 \
+        --preview_dir previews/finetune_v7
+
 Every --eval_every steps it saves the --out weights, a resumable checkpoint, and a grid of samples.
 """
 from typing import Dict, List, Tuple
@@ -60,6 +67,7 @@ def drop_conditions(labels: Dict[str, Tensor], p_drop: float, p_drop_all: float)
         torch.where(dropped(), md.NULL_BACKGROUND, labels["background"]),
         labels["rotation"],
         ~dropped(),
+        torch.where(dropped(), md.NULL_MASCOT, labels["mascot"]),
     ]
 
 
@@ -86,7 +94,11 @@ def load_init_weights(model: nn.Module, path: str) -> None:
         grown[md.NULL_BACKGROUND] = old[n_old]
         state[key] = grown
         print(f"Grew background embedding from {n_old} to {md.NULL_BACKGROUND} backgrounds")
-    model.load_state_dict(state)
+    missing, unexpected = model.load_state_dict(state, strict=False)
+    # weights from before the mascot condition existed keep its zero init, so the model starts out unchanged
+    assert not unexpected and set(missing) <= {"cond_emb.mascot.weight"}, (missing, unexpected)
+    if missing:
+        print("Added the mascot embedding (zero init)")
 
 
 def sample_batch(synth: DigitSynthesizer, batch_size: int, hard_frac: float) -> Tuple[Tensor, Dict[str, Tensor]]:
@@ -129,6 +141,12 @@ def eval_grid(ema: nn.Module, path: Path) -> None:
                 conds = md.condition_tensors(1, col, color, background, rotation, device)
                 titles.append(f"{col} {color}\n{background} {rotation}")
             imgs.append(md.sample(ema, conds))
+    for col in range(8):  # Cocky holding a digit, across backgrounds
+        background = BACKGROUNDS[(col + 2) % len(BACKGROUNDS)]
+        color = DIGIT_COLORS[(col + 2) % len(DIGIT_COLORS)]
+        imgs.append(md.sample(ema, md.condition_tensors(1, (col + 2) % 10, color, background, 0.0, device,
+                                                        mascot=True)))
+        titles.append(f"cocky {(col + 2) % 10} {color}\n{background}")
     for _ in range(8):
         imgs.append(md.sample(ema, md.condition_tensors(1, None, None, None, None, device)))
         titles.append("none")
@@ -161,6 +179,7 @@ def main():
     parser.add_argument("--visibility_tries", type=int, default=8, help="crops tried per sample by the filter")
     parser.add_argument("--mnist_subset", type=str, default=None,
                         help="train only on these MNIST indices, e.g. data/mnist_clean_idx.npy (default: all)")
+    parser.add_argument("--p_mascot", type=float, default=0.0, help="fraction of images where Cocky holds the digit")
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
 
@@ -172,8 +191,10 @@ def main():
 
     synth: DigitSynthesizer = DigitSynthesizer(device, seed=args.seed, min_visibility=args.min_visibility,
                                                visibility_dist=args.visibility_dist, max_clutter=args.max_clutter,
-                                               visibility_tries=args.visibility_tries, mnist_subset=args.mnist_subset)
-    model: nn.Module = md.get_model().to(device)
+                                               visibility_tries=args.visibility_tries, mnist_subset=args.mnist_subset,
+                                               p_mascot=args.p_mascot)
+    # only the image network is trained; build_submission.py adds the text encoder for the submitted .pt
+    model: nn.Module = md.UNet().to(device)
     if args.init is not None:
         load_init_weights(model, args.init)
         print(f"Initialized from {args.init}")

@@ -112,14 +112,81 @@ def load_background_banks(cache_path: Path, n_crops: int, seed: int, rebuild: bo
     return banks
 
 
-def rotate(imgs: Tensor, degrees: Tensor) -> Tensor:
-    """Rotate each image in (B, C, H, W) counter-clockwise by its own angle (same convention as torchvision)."""
+def rotate(imgs: Tensor, degrees: Tensor, scale: Optional[Tensor] = None, center: Optional[Tensor] = None) -> Tensor:
+    """Rotate each image in (B, C, H, W) counter-clockwise by its own angle (same convention as torchvision).
+
+    Optionally also shrink it by scale (B,) and move its center to center (B, 2), in [-1, 1] image coordinates.
+    """
     rad: Tensor = degrees * (math.pi / 180.0)
     cos, sin = rad.cos(), rad.sin()
-    zero: Tensor = torch.zeros_like(cos)
-    theta: Tensor = torch.stack([torch.stack([cos, -sin, zero], 1), torch.stack([sin, cos, zero], 1)], 1)
+    if scale is None:
+        scale = torch.ones_like(cos)
+    if center is None:
+        center = torch.zeros(cos.shape[0], 2, device=cos.device)
+    # output point p maps to input point R (p - center) / scale
+    tx: Tensor = -(cos * center[:, 0] - sin * center[:, 1]) / scale
+    ty: Tensor = -(sin * center[:, 0] + cos * center[:, 1]) / scale
+    theta: Tensor = torch.stack([torch.stack([cos / scale, -sin / scale, tx], 1),
+                                 torch.stack([sin / scale, cos / scale, ty], 1)], 1)
     grid: Tensor = F.affine_grid(theta, list(imgs.shape), align_corners=False)
     return F.grid_sample(imgs, grid, mode="bilinear", padding_mode="zeros", align_corners=False)
+
+
+# Cocky, the USC mascot, as pixel art: comb (R), white head (W), eyes (K), beak and feet (Y), garnet body (G) and a
+# black wing (B) reaching right, toward the digit he is holding. Training images composite it next to a shrunken
+# digit; the network learns to draw it like any other part of the image.
+COCKY_PIXELS: List[str] = [
+    "....RR.R....",
+    "...RRRRR....",
+    "..WWWWWWW...",
+    ".WWKWWWKWW..",
+    ".WWKWWWKWYY.",
+    ".WWWWWWWWYYY",
+    "..WWWWWWWY..",
+    "...GGGGGG...",
+    "..GGGGGGBBB.",
+    ".GGGGGGGGBBB",
+    ".GGGGGGGG.BB",
+    "..GGGGGGG...",
+    "...GGGGG....",
+    "...YY..YY...",
+    "..YYYY.YYYY.",
+]
+COCKY_COLORS: Dict[str, Tuple[float, float, float]] = {
+    "R": (0.85, 0.08, 0.08), "W": (0.97, 0.97, 0.97), "K": (0.05, 0.05, 0.05), "Y": (1.0, 0.78, 0.1),
+    "G": (0.45, 0.0, 0.04), "B": (0.08, 0.06, 0.06),
+}
+MASCOT_DIGIT_SCALE: float = 0.62
+
+
+def cocky_sprite() -> Tensor:
+    """The sprite as an RGBA tensor (4, H, W) with values in [0, 1]."""
+    h, w = len(COCKY_PIXELS), len(COCKY_PIXELS[0])
+    sprite: Tensor = torch.zeros(4, h, w)
+    for y, row in enumerate(COCKY_PIXELS):
+        for x, ch in enumerate(row):
+            if ch != ".":
+                sprite[:3, y, x] = torch.tensor(COCKY_COLORS[ch])
+                sprite[3, y, x] = 1.0
+    return sprite
+
+
+def place_sprite(sprite: Tensor, x0: Tensor, y0: Tensor, height: Tensor, flip: Tensor) -> Tensor:
+    """Draw sprite (4, h, w) into (B, 4, 28, 28) canvases with its top-left corner at pixel (x0, y0), scaled to
+    height pixels tall, mirrored where flip is True."""
+    n: int = x0.shape[0]
+    width: Tensor = height * sprite.shape[2] / sprite.shape[1]
+    # output coordinate o in [-1, 1] maps to sprite coordinate (28 o + 27 - 2 x0) / width - 1
+    ax: Tensor = 28.0 / width
+    bx: Tensor = (27.0 - 2.0 * x0) / width - 1.0
+    sign: Tensor = torch.where(flip, -1.0, 1.0)
+    ay: Tensor = 28.0 / height
+    by: Tensor = (27.0 - 2.0 * y0) / height - 1.0
+    zero: Tensor = torch.zeros_like(ax)
+    theta: Tensor = torch.stack([torch.stack([sign * ax, zero, sign * bx], 1), torch.stack([zero, ay, by], 1)], 1)
+    grid: Tensor = F.affine_grid(theta, [n, 4, 28, 28], align_corners=False)
+    return F.grid_sample(sprite.expand(n, -1, -1, -1), grid, mode="bilinear", padding_mode="zeros",
+                         align_corners=False)
 
 
 def stroke_visibility(bg: Tensor, alpha: Tensor, fg: Tensor, min_dist: float = 0.25) -> Tensor:
@@ -147,12 +214,15 @@ class DigitSynthesizer:
     def __init__(self, device: torch.device, mnist_dir: Path = HERE.parent / "Homework01" / "data",
                  cache_path: Path = HERE / "data" / "background_crops.npz", crops_per_background: int = 30000,
                  seed: int = 0, rebuild_cache: bool = False, min_visibility: float = 0.0, visibility_tries: int = 8,
-                 visibility_dist: float = 0.25, max_clutter: float = 1.0, mnist_subset: Optional[Path] = None):
+                 visibility_dist: float = 0.25, max_clutter: float = 1.0, mnist_subset: Optional[Path] = None,
+                 p_mascot: float = 0.0):
         self.device: torch.device = device
         self.min_visibility: float = min_visibility
         self.visibility_tries: int = visibility_tries
         self.visibility_dist: float = visibility_dist
         self.max_clutter: float = max_clutter
+        self.p_mascot: float = p_mascot  # fraction of samples where Cocky holds the digit
+        self.sprite: Tensor = cocky_sprite().to(device)
 
         imgs, labels = load_mnist(mnist_dir)
         if mnist_subset is not None:  # indices of the MNIST digits to keep (see filter_mnist.py)
@@ -170,12 +240,13 @@ class DigitSynthesizer:
         self.colors: Tensor = COLOR_RGB.to(device)
 
     def sample(self, batch_size: int, digit: Optional[int] = None, digit_color: Optional[int] = None,
-               background: Optional[int] = None, rotation: Optional[float] = None) -> Tuple[Tensor, Dict[str, Tensor]]:
+               background: Optional[int] = None, rotation: Optional[float] = None,
+               mascot: Optional[int] = None) -> Tuple[Tensor, Dict[str, Tensor]]:
         """A random batch of images (B, 3, 28, 28) in [0, 1] and their labels.
 
-        Every condition is sampled uniformly unless it is given, in which case it is fixed for the whole batch.
-        Colors and backgrounds are indices into DIGIT_COLORS and BACKGROUNDS. Labels are digit, digit_color,
-        background (int64) and rotation (float, degrees).
+        Every condition is sampled uniformly unless it is given, in which case it is fixed for the whole batch
+        (mascot is 1 with probability p_mascot). Colors and backgrounds are indices into DIGIT_COLORS and
+        BACKGROUNDS. Labels are digit, digit_color, background, mascot (int64) and rotation (float, degrees).
         """
         labels: Dict[str, Tensor] = {
             "digit": self._fill_or_sample(digit, 10, batch_size),
@@ -186,16 +257,47 @@ class DigitSynthesizer:
             labels["rotation"] = (torch.rand(batch_size, device=self.device) * 2 - 1) * MAX_ROTATION
         else:
             labels["rotation"] = torch.full((batch_size,), float(rotation), device=self.device)
+        if mascot is None:
+            labels["mascot"] = (torch.rand(batch_size, device=self.device) < self.p_mascot).long()
+        else:
+            labels["mascot"] = torch.full((batch_size,), int(mascot), dtype=torch.long, device=self.device)
 
         offset: Tensor = (torch.rand(batch_size, device=self.device) * self.class_count[labels["digit"]]).long()
         digit_idx: Tensor = self.class_start[labels["digit"]] + offset
-        return self.render(digit_idx, labels["digit_color"], labels["background"], labels["rotation"]), labels
+        return self.render(digit_idx, labels["digit_color"], labels["background"], labels["rotation"],
+                           labels["mascot"]), labels
 
-    def render(self, digit_idx: Tensor, digit_color: Tensor, background: Tensor, rotation: Tensor) -> Tensor:
-        """Composite: alpha * color + (1 - alpha) * background, with alpha the rotated MNIST intensity."""
-        alpha: Tensor = rotate(self.digits[digit_idx].float().div(255.0).unsqueeze(1), rotation)
+    def render(self, digit_idx: Tensor, digit_color: Tensor, background: Tensor, rotation: Tensor,
+               mascot: Optional[Tensor] = None) -> Tensor:
+        """Composite: alpha * color + (1 - alpha) * background, with alpha the rotated MNIST intensity.
+
+        Where mascot is 1, the digit shrinks to one side and Cocky stands on the other side with his wing at the
+        digit (drawn behind it, so he looks like he is holding it); either side, chosen at random.
+        """
+        n: int = digit_idx.shape[0]
+        if mascot is None:
+            mascot = torch.zeros(n, dtype=torch.long, device=self.device)
+        has: Tensor = mascot.bool()
+        flip: Tensor = torch.rand(n, device=self.device) < 0.5  # Cocky on the right, digit on the left
+        scale: Tensor = torch.where(has, MASCOT_DIGIT_SCALE, 1.0)
+        cx: Tensor = torch.empty(n, device=self.device).uniform_(0.28, 0.4)
+        cy: Tensor = torch.empty(n, device=self.device).uniform_(-0.12, 0.08)
+        center: Tensor = torch.where(has[:, None], torch.stack([torch.where(flip, -cx, cx), cy], 1), 0.0)
+
+        alpha: Tensor = rotate(self.digits[digit_idx].float().div(255.0).unsqueeze(1), rotation, scale, center)
         fg: Tensor = self.colors[digit_color].view(-1, 3, 1, 1)
-        return alpha * fg + (1.0 - alpha) * self._backgrounds(background, alpha, fg)
+        img: Tensor = self._backgrounds(background, alpha, fg)
+        if bool(has.any()):
+            height: Tensor = torch.empty(n, device=self.device).uniform_(15.0, 19.0)
+            width: Tensor = height * self.sprite.shape[2] / self.sprite.shape[1]
+            x0: Tensor = torch.empty(n, device=self.device).uniform_(0.0, 3.0)
+            x0 = torch.where(flip, 28.0 - x0 - width, x0)
+            y0: Tensor = 28.0 - height - torch.empty(n, device=self.device).uniform_(0.0, 3.0)
+            cocky: Tensor = place_sprite(self.sprite, x0, y0, height, flip) * has.view(-1, 1, 1, 1)
+            jitter: Tensor = torch.empty(n, 1, 1, 1, device=self.device).uniform_(0.9, 1.05)
+            # the sprite's transparent pixels are 0, so its resampled colors are already multiplied by alpha
+            img = ((cocky[:, :3] * jitter).clamp(0, 1) + (1.0 - cocky[:, 3:]) * img).clamp(0, 1)
+        return alpha * fg + (1.0 - alpha) * img
 
     def _backgrounds(self, background: Tensor, alpha: Tensor, fg: Tensor) -> Tensor:
         """Backgrounds for each sample. With the filter on (min_visibility > 0 or max_clutter < 1), each photo
