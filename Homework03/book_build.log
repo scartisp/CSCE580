@@ -1,0 +1,952 @@
+second player, ply 1: solving 4 positions
+  4/4 done, 399s elapsed
+second player, ply 3: solving 23 positions
+  23/23 done, 422s elapsed
+second player, ply 5: solving 124 positions
+  50/124 done, 131s elapsed
+  100/124 done, 285s elapsed
+  124/124 done, 484s elapsed
+second player, ply 7: solving 675 positions
+  50/675 done, 26s elapsed
+  100/675 done, 44s elapsed
+  150/675 done, 69s elapsed
+  200/675 done, 87s elapsed
+  250/675 done, 104s elapsed
+  300/675 done, 110s elapsed
+  350/675 done, 130s elapsed
+  400/675 done, 145s elapsed
+  450/675 done, 161s elapsed
+  500/675 done, 194s elapsed
+  550/675 done, 222s elapsed
+  600/675 done, 247s elapsed
+  650/675 done, 267s elapsed
+  675/675 done, 324s elapsed
+first player, ply 2: solving 4 positions
+  4/4 done, 148s elapsed
+first player, ply 4: solving 24 positions
+  24/24 done, 116s elapsed
+first player, ply 6: solving 138 positions
+  50/138 done, 23s elapsed
+  100/138 done, 41s elapsed
+  138/138 done, 82s elapsed
+first player, ply 8: solving 538 positions
+  50/538 done, 9s elapsed
+  100/538 done, 14s elapsed
+  150/538 done, 18s elapsed
+  200/538 done, 22s elapsed
+  250/538 done, 29s elapsed
+  300/538 done, 33s elapsed
+  350/538 done, 35s elapsed
+  400/538 done, 39s elapsed
+  450/538 done, 42s elapsed
+  500/538 done, 47s elapsed
+  538/538 done, 61s elapsed
+book: 1530 positions (1199 winning, 9 drawn, 4 lost for us)
+loaded 1530 cached positions
+second player, ply 9: solving 2971 positions
+  50/2971 done, 6s elapsed
+  100/2971 done, 8s elapsed
+  150/2971 done, 10s elapsed
+  200/2971 done, 13s elapsed
+  250/2971 done, 21s elapsed
+  300/2971 done, 24s elapsed
+  350/2971 done, 31s elapsed
+  400/2971 done, 38s elapsed
+  450/2971 done, 39s elapsed
+  500/2971 done, 42s elapsed
+  550/2971 done, 46s elapsed
+  600/2971 done, 49s elapsed
+  650/2971 done, 50s elapsed
+  700/2971 done, 53s elapsed
+  750/2971 done, 54s elapsed
+  800/2971 done, 57s elapsed
+  850/2971 done, 59s elapsed
+  900/2971 done, 62s elapsed
+  950/2971 done, 63s elapsed
+  1000/2971 done, 66s elapsed
+  1050/2971 done, 69s elapsed
+  1100/2971 done, 74s elapsed
+  1150/2971 done, 77s elapsed
+  1200/2971 done, 79s elapsed
+  1250/2971 done, 82s elapsed
+  1300/2971 done, 84s elapsed
+  1350/2971 done, 87s elapsed
+  1400/2971 done, 90s elapsed
+  1450/2971 done, 94s elapsed
+  1500/2971 done, 96s elapsed
+  1550/2971 done, 98s elapsed
+  1600/2971 done, 101s elapsed
+  1650/2971 done, 104s elapsed
+  1700/2971 done, 111s elapsed
+  1750/2971 done, 117s elapsed
+  1800/2971 done, 125s elapsed
+  1850/2971 done, 128s elapsed
+  1900/2971 done, 131s elapsed
+  1950/2971 done, 134s elapsed
+  2000/2971 done, 137s elapsed
+  2050/2971 done, 140s elapsed
+  2100/2971 done, 147s elapsed
+  2150/2971 done, 153s elapsed
+  2200/2971 done, 167s elapsed
+  2250/2971 done, 175s elapsed
+  2300/2971 done, 183s elapsed
+  2350/2971 done, 187s elapsed
+  2400/2971 done, 190s elapsed
+  2450/2971 done, 195s elapsed
+  2500/2971 done, 198s elapsed
+  2550/2971 done, 199s elapsed
+  2600/2971 done, 203s elapsed
+  2650/2971 done, 204s elapsed
+  2700/2971 done, 208s elapsed
+  2750/2971 done, 212s elapsed
+  2800/2971 done, 215s elapsed
+  2850/2971 done, 222s elapsed
+  2900/2971 done, 224s elapsed
+  2950/2971 done, 232s elapsed
+  2971/2971 done, 250s elapsed
+second player, ply 11: solving 11585 positions
+  50/11585 done, 1s elapsed
+  100/11585 done, 2s elapsed
+  150/11585 done, 3s elapsed
+  200/11585 done, 4s elapsed
+  250/11585 done, 4s elapsed
+  300/11585 done, 5s elapsed
+  350/11585 done, 6s elapsed
+  400/11585 done, 7s elapsed
+  450/11585 done, 8s elapsed
+  500/11585 done, 9s elapsed
+  550/11585 done, 10s elapsed
+  600/11585 done, 11s elapsed
+  650/11585 done, 13s elapsed
+  700/11585 done, 14s elapsed
+  750/11585 done, 15s elapsed
+  800/11585 done, 16s elapsed
+  850/11585 done, 17s elapsed
+  900/11585 done, 18s elapsed
+  950/11585 done, 18s elapsed
+  1000/11585 done, 19s elapsed
+  1050/11585 done, 19s elapsed
+  1100/11585 done, 20s elapsed
+  1150/11585 done, 21s elapsed
+  1200/11585 done, 22s elapsed
+  1250/11585 done, 23s elapsed
+  1300/11585 done, 23s elapsed
+  1350/11585 done, 24s elapsed
+  1400/11585 done, 25s elapsed
+  1450/11585 done, 26s elapsed
+  1500/11585 done, 27s elapsed
+  1550/11585 done, 27s elapsed
+  1600/11585 done, 28s elapsed
+  1650/11585 done, 29s elapsed
+  1700/11585 done, 29s elapsed
+  1750/11585 done, 30s elapsed
+  1800/11585 done, 30s elapsed
+  1850/11585 done, 31s elapsed
+  1900/11585 done, 33s elapsed
+  1950/11585 done, 34s elapsed
+  2000/11585 done, 35s elapsed
+  2050/11585 done, 36s elapsed
+  2100/11585 done, 37s elapsed
+  2150/11585 done, 37s elapsed
+  2200/11585 done, 38s elapsed
+  2250/11585 done, 38s elapsed
+  2300/11585 done, 39s elapsed
+  2350/11585 done, 40s elapsed
+  2400/11585 done, 40s elapsed
+  2450/11585 done, 41s elapsed
+  2500/11585 done, 42s elapsed
+  2550/11585 done, 42s elapsed
+  2600/11585 done, 43s elapsed
+  2650/11585 done, 44s elapsed
+  2700/11585 done, 44s elapsed
+  2750/11585 done, 45s elapsed
+  2800/11585 done, 46s elapsed
+  2850/11585 done, 47s elapsed
+  2900/11585 done, 48s elapsed
+  2950/11585 done, 48s elapsed
+  3000/11585 done, 49s elapsed
+  3050/11585 done, 50s elapsed
+  3100/11585 done, 52s elapsed
+  3150/11585 done, 53s elapsed
+  3200/11585 done, 54s elapsed
+  3250/11585 done, 55s elapsed
+  3300/11585 done, 55s elapsed
+  3350/11585 done, 56s elapsed
+  3400/11585 done, 56s elapsed
+  3450/11585 done, 57s elapsed
+  3500/11585 done, 58s elapsed
+  3550/11585 done, 59s elapsed
+  3600/11585 done, 60s elapsed
+  3650/11585 done, 61s elapsed
+  3700/11585 done, 61s elapsed
+  3750/11585 done, 62s elapsed
+  3800/11585 done, 63s elapsed
+  3850/11585 done, 63s elapsed
+  3900/11585 done, 64s elapsed
+  3950/11585 done, 65s elapsed
+  4000/11585 done, 66s elapsed
+  4050/11585 done, 66s elapsed
+  4100/11585 done, 67s elapsed
+  4150/11585 done, 68s elapsed
+  4200/11585 done, 69s elapsed
+  4250/11585 done, 70s elapsed
+  4300/11585 done, 71s elapsed
+  4350/11585 done, 72s elapsed
+  4400/11585 done, 72s elapsed
+  4450/11585 done, 73s elapsed
+  4500/11585 done, 74s elapsed
+  4550/11585 done, 75s elapsed
+  4600/11585 done, 75s elapsed
+  4650/11585 done, 76s elapsed
+  4700/11585 done, 77s elapsed
+  4750/11585 done, 77s elapsed
+  4800/11585 done, 78s elapsed
+  4850/11585 done, 79s elapsed
+  4900/11585 done, 80s elapsed
+  4950/11585 done, 82s elapsed
+  5000/11585 done, 85s elapsed
+  5050/11585 done, 86s elapsed
+  5100/11585 done, 88s elapsed
+  5150/11585 done, 88s elapsed
+  5200/11585 done, 91s elapsed
+  5250/11585 done, 92s elapsed
+  5300/11585 done, 93s elapsed
+  5350/11585 done, 95s elapsed
+  5400/11585 done, 96s elapsed
+  5450/11585 done, 99s elapsed
+  5500/11585 done, 99s elapsed
+  5550/11585 done, 100s elapsed
+  5600/11585 done, 101s elapsed
+  5650/11585 done, 102s elapsed
+  5700/11585 done, 103s elapsed
+  5750/11585 done, 104s elapsed
+  5800/11585 done, 104s elapsed
+  5850/11585 done, 105s elapsed
+  5900/11585 done, 106s elapsed
+  5950/11585 done, 107s elapsed
+  6000/11585 done, 108s elapsed
+  6050/11585 done, 109s elapsed
+  6100/11585 done, 110s elapsed
+  6150/11585 done, 110s elapsed
+  6200/11585 done, 112s elapsed
+  6250/11585 done, 113s elapsed
+  6300/11585 done, 114s elapsed
+  6350/11585 done, 115s elapsed
+  6400/11585 done, 116s elapsed
+  6450/11585 done, 116s elapsed
+  6500/11585 done, 117s elapsed
+  6550/11585 done, 118s elapsed
+  6600/11585 done, 119s elapsed
+  6650/11585 done, 120s elapsed
+  6700/11585 done, 121s elapsed
+  6750/11585 done, 122s elapsed
+  6800/11585 done, 123s elapsed
+  6850/11585 done, 124s elapsed
+  6900/11585 done, 124s elapsed
+  6950/11585 done, 125s elapsed
+  7000/11585 done, 126s elapsed
+  7050/11585 done, 128s elapsed
+  7100/11585 done, 129s elapsed
+  7150/11585 done, 130s elapsed
+  7200/11585 done, 131s elapsed
+  7250/11585 done, 132s elapsed
+  7300/11585 done, 133s elapsed
+  7350/11585 done, 134s elapsed
+  7400/11585 done, 135s elapsed
+  7450/11585 done, 136s elapsed
+  7500/11585 done, 137s elapsed
+  7550/11585 done, 138s elapsed
+  7600/11585 done, 140s elapsed
+  7650/11585 done, 142s elapsed
+  7700/11585 done, 144s elapsed
+  7750/11585 done, 145s elapsed
+  7800/11585 done, 147s elapsed
+  7850/11585 done, 148s elapsed
+  7900/11585 done, 150s elapsed
+  7950/11585 done, 152s elapsed
+  8000/11585 done, 154s elapsed
+  8050/11585 done, 156s elapsed
+  8100/11585 done, 157s elapsed
+  8150/11585 done, 158s elapsed
+  8200/11585 done, 160s elapsed
+  8250/11585 done, 161s elapsed
+  8300/11585 done, 162s elapsed
+  8350/11585 done, 163s elapsed
+  8400/11585 done, 164s elapsed
+  8450/11585 done, 166s elapsed
+  8500/11585 done, 167s elapsed
+  8550/11585 done, 168s elapsed
+  8600/11585 done, 169s elapsed
+  8650/11585 done, 170s elapsed
+  8700/11585 done, 171s elapsed
+  8750/11585 done, 172s elapsed
+  8800/11585 done, 173s elapsed
+  8850/11585 done, 175s elapsed
+  8900/11585 done, 176s elapsed
+  8950/11585 done, 177s elapsed
+  9000/11585 done, 178s elapsed
+  9050/11585 done, 179s elapsed
+  9100/11585 done, 180s elapsed
+  9150/11585 done, 181s elapsed
+  9200/11585 done, 182s elapsed
+  9250/11585 done, 183s elapsed
+  9300/11585 done, 185s elapsed
+  9350/11585 done, 186s elapsed
+  9400/11585 done, 187s elapsed
+  9450/11585 done, 188s elapsed
+  9500/11585 done, 190s elapsed
+  9550/11585 done, 191s elapsed
+  9600/11585 done, 192s elapsed
+  9650/11585 done, 193s elapsed
+  9700/11585 done, 194s elapsed
+  9750/11585 done, 196s elapsed
+  9800/11585 done, 197s elapsed
+  9850/11585 done, 198s elapsed
+  9900/11585 done, 199s elapsed
+  9950/11585 done, 200s elapsed
+  10000/11585 done, 201s elapsed
+  10050/11585 done, 203s elapsed
+  10100/11585 done, 204s elapsed
+  10150/11585 done, 205s elapsed
+  10200/11585 done, 207s elapsed
+  10250/11585 done, 208s elapsed
+  10300/11585 done, 209s elapsed
+  10350/11585 done, 210s elapsed
+  10400/11585 done, 211s elapsed
+  10450/11585 done, 213s elapsed
+  10500/11585 done, 214s elapsed
+  10550/11585 done, 215s elapsed
+  10600/11585 done, 216s elapsed
+  10650/11585 done, 217s elapsed
+  10700/11585 done, 220s elapsed
+  10750/11585 done, 221s elapsed
+  10800/11585 done, 222s elapsed
+  10850/11585 done, 223s elapsed
+  10900/11585 done, 224s elapsed
+  10950/11585 done, 226s elapsed
+  11000/11585 done, 227s elapsed
+  11050/11585 done, 228s elapsed
+  11100/11585 done, 229s elapsed
+  11150/11585 done, 231s elapsed
+  11200/11585 done, 232s elapsed
+  11250/11585 done, 234s elapsed
+  11300/11585 done, 234s elapsed
+  11350/11585 done, 235s elapsed
+  11400/11585 done, 236s elapsed
+  11450/11585 done, 236s elapsed
+  11500/11585 done, 237s elapsed
+  11550/11585 done, 238s elapsed
+  11585/11585 done, 238s elapsed
+first player, ply 10: solving 2031 positions
+  50/2031 done, 2s elapsed
+  100/2031 done, 4s elapsed
+  150/2031 done, 5s elapsed
+  200/2031 done, 7s elapsed
+  250/2031 done, 8s elapsed
+  300/2031 done, 10s elapsed
+  350/2031 done, 12s elapsed
+  400/2031 done, 13s elapsed
+  450/2031 done, 14s elapsed
+  500/2031 done, 16s elapsed
+  550/2031 done, 17s elapsed
+  600/2031 done, 18s elapsed
+  650/2031 done, 20s elapsed
+  700/2031 done, 21s elapsed
+  750/2031 done, 22s elapsed
+  800/2031 done, 25s elapsed
+  850/2031 done, 26s elapsed
+  900/2031 done, 27s elapsed
+  950/2031 done, 29s elapsed
+  1000/2031 done, 31s elapsed
+  1050/2031 done, 32s elapsed
+  1100/2031 done, 34s elapsed
+  1150/2031 done, 35s elapsed
+  1200/2031 done, 36s elapsed
+  1250/2031 done, 38s elapsed
+  1300/2031 done, 40s elapsed
+  1350/2031 done, 41s elapsed
+  1400/2031 done, 43s elapsed
+  1450/2031 done, 44s elapsed
+  1500/2031 done, 45s elapsed
+  1550/2031 done, 46s elapsed
+  1600/2031 done, 47s elapsed
+  1650/2031 done, 47s elapsed
+  1700/2031 done, 48s elapsed
+  1750/2031 done, 49s elapsed
+  1800/2031 done, 49s elapsed
+  1850/2031 done, 50s elapsed
+  1900/2031 done, 51s elapsed
+  1950/2031 done, 51s elapsed
+  2000/2031 done, 52s elapsed
+  2031/2031 done, 53s elapsed
+first player, ply 12: solving 6109 positions
+  50/6109 done, 0s elapsed
+  100/6109 done, 2s elapsed
+  150/6109 done, 3s elapsed
+  200/6109 done, 5s elapsed
+  250/6109 done, 6s elapsed
+  300/6109 done, 7s elapsed
+  350/6109 done, 8s elapsed
+  400/6109 done, 10s elapsed
+  450/6109 done, 11s elapsed
+  500/6109 done, 13s elapsed
+  550/6109 done, 14s elapsed
+  600/6109 done, 16s elapsed
+  650/6109 done, 17s elapsed
+  700/6109 done, 18s elapsed
+  750/6109 done, 20s elapsed
+  800/6109 done, 22s elapsed
+  850/6109 done, 23s elapsed
+  900/6109 done, 25s elapsed
+  950/6109 done, 26s elapsed
+  1000/6109 done, 27s elapsed
+  1050/6109 done, 29s elapsed
+  1100/6109 done, 31s elapsed
+  1150/6109 done, 32s elapsed
+  1200/6109 done, 34s elapsed
+  1250/6109 done, 35s elapsed
+  1300/6109 done, 37s elapsed
+  1350/6109 done, 39s elapsed
+  1400/6109 done, 40s elapsed
+  1450/6109 done, 42s elapsed
+  1500/6109 done, 43s elapsed
+  1550/6109 done, 45s elapsed
+  1600/6109 done, 46s elapsed
+  1650/6109 done, 47s elapsed
+  1700/6109 done, 48s elapsed
+  1750/6109 done, 49s elapsed
+  1800/6109 done, 49s elapsed
+  1850/6109 done, 50s elapsed
+  1900/6109 done, 51s elapsed
+  1950/6109 done, 52s elapsed
+  2000/6109 done, 52s elapsed
+  2050/6109 done, 53s elapsed
+  2100/6109 done, 54s elapsed
+  2150/6109 done, 55s elapsed
+  2200/6109 done, 55s elapsed
+  2250/6109 done, 56s elapsed
+  2300/6109 done, 57s elapsed
+  2350/6109 done, 58s elapsed
+  2400/6109 done, 59s elapsed
+  2450/6109 done, 60s elapsed
+  2500/6109 done, 61s elapsed
+  2550/6109 done, 61s elapsed
+  2600/6109 done, 62s elapsed
+  2650/6109 done, 63s elapsed
+  2700/6109 done, 64s elapsed
+  2750/6109 done, 65s elapsed
+  2800/6109 done, 65s elapsed
+  2850/6109 done, 66s elapsed
+  2900/6109 done, 67s elapsed
+  2950/6109 done, 68s elapsed
+  3000/6109 done, 69s elapsed
+  3050/6109 done, 69s elapsed
+  3100/6109 done, 70s elapsed
+  3150/6109 done, 71s elapsed
+  3200/6109 done, 72s elapsed
+  3250/6109 done, 73s elapsed
+  3300/6109 done, 74s elapsed
+  3350/6109 done, 75s elapsed
+  3400/6109 done, 76s elapsed
+  3450/6109 done, 76s elapsed
+  3500/6109 done, 77s elapsed
+  3550/6109 done, 78s elapsed
+  3600/6109 done, 79s elapsed
+  3650/6109 done, 80s elapsed
+  3700/6109 done, 80s elapsed
+  3750/6109 done, 81s elapsed
+  3800/6109 done, 82s elapsed
+  3850/6109 done, 83s elapsed
+  3900/6109 done, 84s elapsed
+  3950/6109 done, 85s elapsed
+  4000/6109 done, 86s elapsed
+  4050/6109 done, 86s elapsed
+  4100/6109 done, 87s elapsed
+  4150/6109 done, 88s elapsed
+  4200/6109 done, 89s elapsed
+  4250/6109 done, 90s elapsed
+  4300/6109 done, 91s elapsed
+  4350/6109 done, 92s elapsed
+  4400/6109 done, 93s elapsed
+  4450/6109 done, 94s elapsed
+  4500/6109 done, 95s elapsed
+  4550/6109 done, 96s elapsed
+  4600/6109 done, 96s elapsed
+  4650/6109 done, 97s elapsed
+  4700/6109 done, 98s elapsed
+  4750/6109 done, 99s elapsed
+  4800/6109 done, 100s elapsed
+  4850/6109 done, 101s elapsed
+  4900/6109 done, 102s elapsed
+  4950/6109 done, 103s elapsed
+  5000/6109 done, 104s elapsed
+  5050/6109 done, 105s elapsed
+  5100/6109 done, 106s elapsed
+  5150/6109 done, 107s elapsed
+  5200/6109 done, 108s elapsed
+  5250/6109 done, 108s elapsed
+  5300/6109 done, 109s elapsed
+  5350/6109 done, 110s elapsed
+  5400/6109 done, 111s elapsed
+  5450/6109 done, 112s elapsed
+  5500/6109 done, 113s elapsed
+  5550/6109 done, 114s elapsed
+  5600/6109 done, 115s elapsed
+  5650/6109 done, 116s elapsed
+  5700/6109 done, 117s elapsed
+  5750/6109 done, 118s elapsed
+  5800/6109 done, 118s elapsed
+  5850/6109 done, 119s elapsed
+  5900/6109 done, 121s elapsed
+  5950/6109 done, 122s elapsed
+  6000/6109 done, 123s elapsed
+  6050/6109 done, 123s elapsed
+  6100/6109 done, 124s elapsed
+  6109/6109 done, 125s elapsed
+book: 24226 positions (16424 winning, 23 drawn, 9 lost for us)
+loaded 24226 cached positions
+first player, ply 14: solving 18101 positions
+  50/18101 done, 0s elapsed
+  100/18101 done, 2s elapsed
+  150/18101 done, 4s elapsed
+  200/18101 done, 5s elapsed
+  250/18101 done, 6s elapsed
+  300/18101 done, 7s elapsed
+  350/18101 done, 8s elapsed
+  400/18101 done, 9s elapsed
+  450/18101 done, 11s elapsed
+  500/18101 done, 12s elapsed
+  550/18101 done, 13s elapsed
+  600/18101 done, 15s elapsed
+  650/18101 done, 16s elapsed
+  700/18101 done, 19s elapsed
+  750/18101 done, 20s elapsed
+  800/18101 done, 21s elapsed
+  850/18101 done, 22s elapsed
+  900/18101 done, 24s elapsed
+  950/18101 done, 25s elapsed
+  1000/18101 done, 26s elapsed
+  1050/18101 done, 27s elapsed
+  1100/18101 done, 28s elapsed
+  1150/18101 done, 29s elapsed
+  1200/18101 done, 30s elapsed
+  1250/18101 done, 31s elapsed
+  1300/18101 done, 33s elapsed
+  1350/18101 done, 34s elapsed
+  1400/18101 done, 35s elapsed
+  1450/18101 done, 37s elapsed
+  1500/18101 done, 38s elapsed
+  1550/18101 done, 39s elapsed
+  1600/18101 done, 41s elapsed
+  1650/18101 done, 43s elapsed
+  1700/18101 done, 44s elapsed
+  1750/18101 done, 45s elapsed
+  1800/18101 done, 46s elapsed
+  1850/18101 done, 48s elapsed
+  1900/18101 done, 50s elapsed
+  1950/18101 done, 52s elapsed
+  2000/18101 done, 54s elapsed
+  2050/18101 done, 56s elapsed
+  2100/18101 done, 57s elapsed
+  2150/18101 done, 59s elapsed
+  2200/18101 done, 61s elapsed
+  2250/18101 done, 64s elapsed
+  2300/18101 done, 66s elapsed
+  2350/18101 done, 67s elapsed
+  2400/18101 done, 69s elapsed
+  2450/18101 done, 70s elapsed
+  2500/18101 done, 72s elapsed
+  2550/18101 done, 73s elapsed
+  2600/18101 done, 76s elapsed
+  2650/18101 done, 78s elapsed
+  2700/18101 done, 80s elapsed
+  2750/18101 done, 81s elapsed
+  2800/18101 done, 82s elapsed
+  2850/18101 done, 84s elapsed
+  2900/18101 done, 85s elapsed
+  2950/18101 done, 87s elapsed
+  3000/18101 done, 89s elapsed
+  3050/18101 done, 90s elapsed
+  3100/18101 done, 92s elapsed
+  3150/18101 done, 94s elapsed
+  3200/18101 done, 96s elapsed
+  3250/18101 done, 97s elapsed
+  3300/18101 done, 98s elapsed
+  3350/18101 done, 99s elapsed
+  3400/18101 done, 100s elapsed
+  3450/18101 done, 101s elapsed
+  3500/18101 done, 102s elapsed
+  3550/18101 done, 103s elapsed
+  3600/18101 done, 104s elapsed
+  3650/18101 done, 105s elapsed
+  3700/18101 done, 107s elapsed
+  3750/18101 done, 108s elapsed
+  3800/18101 done, 109s elapsed
+  3850/18101 done, 110s elapsed
+  3900/18101 done, 111s elapsed
+  3950/18101 done, 113s elapsed
+  4000/18101 done, 114s elapsed
+  4050/18101 done, 115s elapsed
+  4100/18101 done, 116s elapsed
+  4150/18101 done, 117s elapsed
+  4200/18101 done, 118s elapsed
+  4250/18101 done, 119s elapsed
+  4300/18101 done, 120s elapsed
+  4350/18101 done, 121s elapsed
+  4400/18101 done, 123s elapsed
+  4450/18101 done, 124s elapsed
+  4500/18101 done, 125s elapsed
+  4550/18101 done, 126s elapsed
+  4600/18101 done, 127s elapsed
+  4650/18101 done, 128s elapsed
+  4700/18101 done, 129s elapsed
+  4750/18101 done, 130s elapsed
+  4800/18101 done, 131s elapsed
+  4850/18101 done, 132s elapsed
+  4900/18101 done, 134s elapsed
+  4950/18101 done, 135s elapsed
+  5000/18101 done, 136s elapsed
+  5050/18101 done, 137s elapsed
+  5100/18101 done, 138s elapsed
+  5150/18101 done, 139s elapsed
+  5200/18101 done, 141s elapsed
+  5250/18101 done, 142s elapsed
+  5300/18101 done, 143s elapsed
+  5350/18101 done, 144s elapsed
+  5400/18101 done, 145s elapsed
+  5450/18101 done, 146s elapsed
+  5500/18101 done, 147s elapsed
+  5550/18101 done, 148s elapsed
+  5600/18101 done, 150s elapsed
+  5650/18101 done, 151s elapsed
+  5700/18101 done, 152s elapsed
+  5750/18101 done, 153s elapsed
+  5800/18101 done, 155s elapsed
+  5850/18101 done, 156s elapsed
+  5900/18101 done, 157s elapsed
+  5950/18101 done, 158s elapsed
+  6000/18101 done, 159s elapsed
+  6050/18101 done, 160s elapsed
+  6100/18101 done, 161s elapsed
+  6150/18101 done, 163s elapsed
+  6200/18101 done, 164s elapsed
+  6250/18101 done, 165s elapsed
+  6300/18101 done, 166s elapsed
+  6350/18101 done, 167s elapsed
+  6400/18101 done, 169s elapsed
+  6450/18101 done, 170s elapsed
+  6500/18101 done, 171s elapsed
+  6550/18101 done, 172s elapsed
+  6600/18101 done, 174s elapsed
+  6650/18101 done, 175s elapsed
+  6700/18101 done, 176s elapsed
+  6750/18101 done, 177s elapsed
+  6800/18101 done, 178s elapsed
+  6850/18101 done, 179s elapsed
+  6900/18101 done, 180s elapsed
+  6950/18101 done, 182s elapsed
+  7000/18101 done, 183s elapsed
+  7050/18101 done, 185s elapsed
+  7100/18101 done, 186s elapsed
+  7150/18101 done, 187s elapsed
+  7200/18101 done, 188s elapsed
+  7250/18101 done, 189s elapsed
+  7300/18101 done, 190s elapsed
+  7350/18101 done, 192s elapsed
+  7400/18101 done, 193s elapsed
+  7450/18101 done, 194s elapsed
+  7500/18101 done, 195s elapsed
+  7550/18101 done, 196s elapsed
+  7600/18101 done, 198s elapsed
+  7650/18101 done, 199s elapsed
+  7700/18101 done, 200s elapsed
+  7750/18101 done, 202s elapsed
+  7800/18101 done, 203s elapsed
+  7850/18101 done, 204s elapsed
+  7900/18101 done, 205s elapsed
+  7950/18101 done, 206s elapsed
+  8000/18101 done, 207s elapsed
+  8050/18101 done, 209s elapsed
+  8100/18101 done, 210s elapsed
+  8150/18101 done, 211s elapsed
+  8200/18101 done, 212s elapsed
+  8250/18101 done, 214s elapsed
+  8300/18101 done, 215s elapsed
+  8350/18101 done, 216s elapsed
+  8400/18101 done, 218s elapsed
+  8450/18101 done, 219s elapsed
+  8500/18101 done, 220s elapsed
+  8550/18101 done, 221s elapsed
+  8600/18101 done, 223s elapsed
+  8650/18101 done, 224s elapsed
+  8700/18101 done, 225s elapsed
+  8750/18101 done, 226s elapsed
+  8800/18101 done, 228s elapsed
+  8850/18101 done, 229s elapsed
+  8900/18101 done, 231s elapsed
+  8950/18101 done, 232s elapsed
+  9000/18101 done, 233s elapsed
+  9050/18101 done, 234s elapsed
+  9100/18101 done, 236s elapsed
+  9150/18101 done, 237s elapsed
+  9200/18101 done, 238s elapsed
+  9250/18101 done, 239s elapsed
+  9300/18101 done, 240s elapsed
+  9350/18101 done, 242s elapsed
+  9400/18101 done, 243s elapsed
+  9450/18101 done, 245s elapsed
+  9500/18101 done, 246s elapsed
+  9550/18101 done, 247s elapsed
+  9600/18101 done, 248s elapsed
+  9650/18101 done, 250s elapsed
+  9700/18101 done, 251s elapsed
+  9750/18101 done, 252s elapsed
+  9800/18101 done, 253s elapsed
+  9850/18101 done, 255s elapsed
+  9900/18101 done, 256s elapsed
+  9950/18101 done, 257s elapsed
+  10000/18101 done, 259s elapsed
+  10050/18101 done, 260s elapsed
+  10100/18101 done, 262s elapsed
+  10150/18101 done, 263s elapsed
+  10200/18101 done, 264s elapsed
+  10250/18101 done, 265s elapsed
+  10300/18101 done, 267s elapsed
+  10350/18101 done, 268s elapsed
+  10400/18101 done, 269s elapsed
+  10450/18101 done, 270s elapsed
+  10500/18101 done, 272s elapsed
+  10550/18101 done, 273s elapsed
+  10600/18101 done, 275s elapsed
+  10650/18101 done, 276s elapsed
+  10700/18101 done, 277s elapsed
+  10750/18101 done, 279s elapsed
+  10800/18101 done, 280s elapsed
+  10850/18101 done, 281s elapsed
+  10900/18101 done, 283s elapsed
+  10950/18101 done, 284s elapsed
+  11000/18101 done, 285s elapsed
+  11050/18101 done, 287s elapsed
+  11100/18101 done, 289s elapsed
+  11150/18101 done, 291s elapsed
+  11200/18101 done, 292s elapsed
+  11250/18101 done, 294s elapsed
+  11300/18101 done, 296s elapsed
+  11350/18101 done, 297s elapsed
+  11400/18101 done, 299s elapsed
+  11450/18101 done, 300s elapsed
+  11500/18101 done, 302s elapsed
+  11550/18101 done, 304s elapsed
+  11600/18101 done, 305s elapsed
+  11650/18101 done, 307s elapsed
+  11700/18101 done, 308s elapsed
+  11750/18101 done, 310s elapsed
+  11800/18101 done, 311s elapsed
+  11850/18101 done, 312s elapsed
+  11900/18101 done, 314s elapsed
+  11950/18101 done, 315s elapsed
+  12000/18101 done, 317s elapsed
+  12050/18101 done, 318s elapsed
+  12100/18101 done, 320s elapsed
+  12150/18101 done, 322s elapsed
+  12200/18101 done, 323s elapsed
+  12250/18101 done, 325s elapsed
+  12300/18101 done, 326s elapsed
+  12350/18101 done, 327s elapsed
+  12400/18101 done, 329s elapsed
+  12450/18101 done, 330s elapsed
+  12500/18101 done, 332s elapsed
+  12550/18101 done, 334s elapsed
+  12600/18101 done, 335s elapsed
+  12650/18101 done, 337s elapsed
+  12700/18101 done, 338s elapsed
+  12750/18101 done, 340s elapsed
+  12800/18101 done, 341s elapsed
+  12850/18101 done, 343s elapsed
+  12900/18101 done, 345s elapsed
+  12950/18101 done, 346s elapsed
+  13000/18101 done, 348s elapsed
+  13050/18101 done, 350s elapsed
+  13100/18101 done, 351s elapsed
+  13150/18101 done, 353s elapsed
+  13200/18101 done, 355s elapsed
+  13250/18101 done, 356s elapsed
+  13300/18101 done, 358s elapsed
+  13350/18101 done, 359s elapsed
+  13400/18101 done, 361s elapsed
+  13450/18101 done, 362s elapsed
+  13500/18101 done, 364s elapsed
+  13550/18101 done, 366s elapsed
+  13600/18101 done, 367s elapsed
+  13650/18101 done, 369s elapsed
+  13700/18101 done, 370s elapsed
+  13750/18101 done, 372s elapsed
+  13800/18101 done, 374s elapsed
+  13850/18101 done, 375s elapsed
+  13900/18101 done, 377s elapsed
+  13950/18101 done, 378s elapsed
+  14000/18101 done, 380s elapsed
+  14050/18101 done, 382s elapsed
+  14100/18101 done, 384s elapsed
+  14150/18101 done, 385s elapsed
+  14200/18101 done, 387s elapsed
+  14250/18101 done, 388s elapsed
+  14300/18101 done, 390s elapsed
+  14350/18101 done, 392s elapsed
+  14400/18101 done, 393s elapsed
+  14450/18101 done, 395s elapsed
+  14500/18101 done, 397s elapsed
+  14550/18101 done, 398s elapsed
+  14600/18101 done, 400s elapsed
+  14650/18101 done, 402s elapsed
+  14700/18101 done, 403s elapsed
+  14750/18101 done, 405s elapsed
+  14800/18101 done, 406s elapsed
+  14850/18101 done, 408s elapsed
+  14900/18101 done, 410s elapsed
+  14950/18101 done, 412s elapsed
+  15000/18101 done, 414s elapsed
+  15050/18101 done, 415s elapsed
+  15100/18101 done, 417s elapsed
+  15150/18101 done, 419s elapsed
+  15200/18101 done, 420s elapsed
+  15250/18101 done, 422s elapsed
+  15300/18101 done, 424s elapsed
+  15350/18101 done, 426s elapsed
+  15400/18101 done, 428s elapsed
+  15450/18101 done, 429s elapsed
+  15500/18101 done, 431s elapsed
+  15550/18101 done, 432s elapsed
+  15600/18101 done, 434s elapsed
+  15650/18101 done, 436s elapsed
+  15700/18101 done, 438s elapsed
+  15750/18101 done, 440s elapsed
+  15800/18101 done, 441s elapsed
+  15850/18101 done, 443s elapsed
+  15900/18101 done, 445s elapsed
+  15950/18101 done, 447s elapsed
+  16000/18101 done, 448s elapsed
+  16050/18101 done, 450s elapsed
+  16100/18101 done, 452s elapsed
+  16150/18101 done, 454s elapsed
+  16200/18101 done, 456s elapsed
+  16250/18101 done, 458s elapsed
+  16300/18101 done, 459s elapsed
+  16350/18101 done, 461s elapsed
+  16400/18101 done, 463s elapsed
+  16450/18101 done, 465s elapsed
+  16500/18101 done, 466s elapsed
+  16550/18101 done, 468s elapsed
+  16600/18101 done, 470s elapsed
+  16650/18101 done, 472s elapsed
+  16700/18101 done, 473s elapsed
+  16750/18101 done, 475s elapsed
+  16800/18101 done, 477s elapsed
+  16850/18101 done, 479s elapsed
+  16900/18101 done, 480s elapsed
+  16950/18101 done, 482s elapsed
+  17000/18101 done, 484s elapsed
+  17050/18101 done, 486s elapsed
+  17100/18101 done, 488s elapsed
+  17150/18101 done, 490s elapsed
+  17200/18101 done, 492s elapsed
+  17250/18101 done, 493s elapsed
+  17300/18101 done, 495s elapsed
+  17350/18101 done, 497s elapsed
+  17400/18101 done, 499s elapsed
+  17450/18101 done, 501s elapsed
+  17500/18101 done, 503s elapsed
+  17550/18101 done, 505s elapsed
+  17600/18101 done, 507s elapsed
+  17650/18101 done, 508s elapsed
+  17700/18101 done, 510s elapsed
+  17750/18101 done, 512s elapsed
+  17800/18101 done, 514s elapsed
+  17850/18101 done, 516s elapsed
+  17900/18101 done, 518s elapsed
+  17950/18101 done, 520s elapsed
+  18000/18101 done, 522s elapsed
+  18050/18101 done, 524s elapsed
+  18100/18101 done, 525s elapsed
+  18101/18101 done, 527s elapsed
+book: 42327 positions (26800 winning, 23 drawn, 9 lost for us)
+loaded 42327 cached positions
+first player, ply 16: measuring 51180 positions
+  1000/51180 done, 1 hard, 2s elapsed
+  2000/51180 done, 3 hard, 4s elapsed
+  3000/51180 done, 7 hard, 7s elapsed
+  4000/51180 done, 14 hard, 9s elapsed
+  5000/51180 done, 14 hard, 12s elapsed
+  6000/51180 done, 16 hard, 14s elapsed
+  7000/51180 done, 21 hard, 16s elapsed
+  8000/51180 done, 26 hard, 18s elapsed
+  9000/51180 done, 27 hard, 21s elapsed
+  10000/51180 done, 29 hard, 23s elapsed
+  11000/51180 done, 33 hard, 25s elapsed
+  12000/51180 done, 34 hard, 27s elapsed
+  13000/51180 done, 36 hard, 29s elapsed
+  14000/51180 done, 40 hard, 32s elapsed
+  15000/51180 done, 42 hard, 34s elapsed
+  16000/51180 done, 43 hard, 36s elapsed
+  17000/51180 done, 45 hard, 39s elapsed
+  18000/51180 done, 63 hard, 41s elapsed
+  19000/51180 done, 64 hard, 43s elapsed
+  20000/51180 done, 66 hard, 46s elapsed
+  21000/51180 done, 68 hard, 48s elapsed
+  22000/51180 done, 73 hard, 50s elapsed
+  23000/51180 done, 84 hard, 52s elapsed
+  24000/51180 done, 91 hard, 54s elapsed
+  25000/51180 done, 94 hard, 57s elapsed
+  26000/51180 done, 109 hard, 59s elapsed
+  27000/51180 done, 132 hard, 62s elapsed
+  28000/51180 done, 143 hard, 64s elapsed
+  29000/51180 done, 183 hard, 67s elapsed
+  30000/51180 done, 194 hard, 69s elapsed
+  31000/51180 done, 198 hard, 71s elapsed
+  32000/51180 done, 202 hard, 74s elapsed
+  33000/51180 done, 213 hard, 76s elapsed
+  34000/51180 done, 218 hard, 78s elapsed
+  35000/51180 done, 225 hard, 80s elapsed
+  36000/51180 done, 230 hard, 82s elapsed
+  37000/51180 done, 239 hard, 85s elapsed
+  38000/51180 done, 241 hard, 87s elapsed
+  39000/51180 done, 246 hard, 89s elapsed
+  40000/51180 done, 257 hard, 91s elapsed
+  41000/51180 done, 266 hard, 94s elapsed
+  42000/51180 done, 291 hard, 96s elapsed
+  43000/51180 done, 296 hard, 98s elapsed
+  44000/51180 done, 309 hard, 101s elapsed
+  45000/51180 done, 321 hard, 103s elapsed
+  46000/51180 done, 339 hard, 106s elapsed
+  47000/51180 done, 349 hard, 108s elapsed
+  48000/51180 done, 359 hard, 110s elapsed
+  49000/51180 done, 380 hard, 112s elapsed
+  50000/51180 done, 400 hard, 115s elapsed
+  51000/51180 done, 429 hard, 117s elapsed
+  51180/51180 done, 436 hard, 118s elapsed
+book: 42327 positions (26800 winning, 23 drawn, 9 lost for us), plus 436 slow-to-solve positions
+loaded 42327 cached positions
+first player, ply 16: measuring 0 positions
+second player, ply 13: checking 41768 positions
+  2000/41768 done, 14 need a book move, 17s elapsed
+  4000/41768 done, 40 need a book move, 33s elapsed
+  6000/41768 done, 65 need a book move, 58s elapsed
+  8000/41768 done, 86 need a book move, 82s elapsed
+  10000/41768 done, 102 need a book move, 98s elapsed
+  12000/41768 done, 119 need a book move, 113s elapsed
+  14000/41768 done, 136 need a book move, 135s elapsed
+  16000/41768 done, 170 need a book move, 151s elapsed
+  18000/41768 done, 187 need a book move, 169s elapsed
+  20000/41768 done, 209 need a book move, 191s elapsed
+  22000/41768 done, 229 need a book move, 214s elapsed
+  24000/41768 done, 271 need a book move, 244s elapsed
+  26000/41768 done, 302 need a book move, 274s elapsed
+  28000/41768 done, 342 need a book move, 298s elapsed
+  30000/41768 done, 355 need a book move, 312s elapsed
+  32000/41768 done, 366 need a book move, 327s elapsed
+  34000/41768 done, 376 need a book move, 336s elapsed
+  36000/41768 done, 390 need a book move, 353s elapsed
+  38000/41768 done, 409 need a book move, 372s elapsed
+  40000/41768 done, 447 need a book move, 398s elapsed
+  41768/41768 done, 467 need a book move, 421s elapsed
+book: 42327 positions (26800 winning, 23 drawn, 9 lost for us), plus 903 targeted positions

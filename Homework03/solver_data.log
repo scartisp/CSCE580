@@ -1,0 +1,25 @@
+50/1200 games, 543 positions, 3s
+100/1200 games, 1268 positions, 6s
+150/1200 games, 1865 positions, 10s
+200/1200 games, 2518 positions, 12s
+250/1200 games, 3281 positions, 15s
+300/1200 games, 3978 positions, 17s
+350/1200 games, 4637 positions, 19s
+400/1200 games, 5227 positions, 22s
+450/1200 games, 5880 positions, 25s
+500/1200 games, 6593 positions, 27s
+550/1200 games, 7276 positions, 29s
+600/1200 games, 7966 positions, 31s
+650/1200 games, 8644 positions, 35s
+700/1200 games, 9326 positions, 38s
+750/1200 games, 9924 positions, 41s
+800/1200 games, 10617 positions, 44s
+850/1200 games, 11294 positions, 47s
+900/1200 games, 12022 positions, 49s
+950/1200 games, 12652 positions, 52s
+1000/1200 games, 13305 positions, 54s
+1050/1200 games, 14054 positions, 57s
+1100/1200 games, 14771 positions, 59s
+1150/1200 games, 15379 positions, 61s
+1200/1200 games, 16136 positions, 66s
+wrote eval_data.json

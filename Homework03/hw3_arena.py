@@ -164,16 +164,23 @@ def main():
     parser.add_argument('--opening', type=int, default=0, help="random plies played before agents take over")
     parser.add_argument('--time', type=float, default=None, help="override TIME_LIMIT of search agents")
     parser.add_argument('--workers', type=int, default=1, help="parallel games (inflates move times)")
+    parser.add_argument('--a-side', choices=["both", "first", "second"], default="both",
+                        help="which side A plays (both: alternate)")
     parser.add_argument('--seed', type=int, default=0)
     args = parser.parse_args()
 
     env = ConnectFour()
     jobs: List[Tuple[bool, List[int], int]] = []
-    for pair in range((args.games + 1) // 2):
-        opening = random_opening(env, args.opening, args.seed + pair)
-        jobs.append((True, opening, args.seed + 2 * pair))
-        jobs.append((False, opening, args.seed + 2 * pair + 1))
-    jobs = jobs[:args.games]
+    if args.a_side == "both":
+        for pair in range((args.games + 1) // 2):
+            opening = random_opening(env, args.opening, args.seed + pair)
+            jobs.append((True, opening, args.seed + 2 * pair))
+            jobs.append((False, opening, args.seed + 2 * pair + 1))
+        jobs = jobs[:args.games]
+    else:
+        for idx in range(args.games):
+            opening = random_opening(env, args.opening, args.seed + idx)
+            jobs.append((args.a_side == "first", opening, args.seed + idx))
 
     results: List[Dict] = []
     with Pool(args.workers, initializer=_init_worker, initargs=(args.a, args.b, args.time)) as pool:

@@ -1,0 +1,11 @@
+B first: A WINS in 38 moves  [33333161544444341261661155555662222200]
+B first: A WINS in 38 moves  [33333161544444341261661155555662222200]
+A first: A WINS in 37 moves  [3333311113155551550002224406006666644]
+A first: A WINS in 41 moves  [33333111131555551522204402224044466666600]
+
+A = connect_four_alg.py, B = versions/v1_nobook.py
+  A going first : 2 W / 0 D / 0 L
+  A going second: 2 W / 0 D / 0 L
+  Total: 4 W / 0 D / 0 L  (A win rate 100.0%)
+  connect_four_alg.py move time: avg 0.20s, max 1.64s
+  versions/v1_nobook.py move time: avg 0.93s, max 2.70s

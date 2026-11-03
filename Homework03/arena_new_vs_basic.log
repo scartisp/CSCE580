@@ -1,0 +1,17 @@
+A first: A WINS in 17 moves  [52344331324445261]
+A first: A WINS in 29 moves  [66353533565664553630202000202]
+B first: A WINS in 26 moves  [11422212122011040300535433]
+A first: A WINS in 35 moves  [11323233223231142441154044555556066]
+B first: A WINS in 24 moves  [524654556242246651010141]
+B first: A WINS in 42 moves  [662111223345354551442113342324600060006655]
+B first: A WINS in 42 moves  [020300131122133453221324445655456415006666]
+B first: A WINS in 42 moves  [646366535544533213445362221011210241500600]
+A first: A WINS in 27 moves  [023232233131102114103244400]
+A first: A WINS in 25 moves  [6434344335355645525634262]
+
+A = connect_four_alg.py, B = basic
+  A going first : 5 W / 0 D / 0 L
+  A going second: 5 W / 0 D / 0 L
+  Total: 10 W / 0 D / 0 L  (A win rate 100.0%)
+  connect_four_alg.py move time: avg 0.74s, max 3.06s
+  basic move time: avg 0.13s, max 0.39s
