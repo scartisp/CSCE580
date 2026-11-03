@@ -20,6 +20,7 @@ CENTER: int = COL_MASKS[WIDTH // 2]
 ODD_ROWS: int = BOTTOM * 0b010101  # rows 1, 3, 5 counting from the bottom
 EVEN_ROWS: int = BOTTOM * 0b101010  # rows 2, 4, 6
 MOVE_ORDER: List[int] = [3, 2, 4, 1, 5, 0, 6]
+ORDERED_COL_MASKS: List[int] = [COL_MASKS[col] for col in MOVE_ORDER]
 DIRECTIONS: Tuple[int, ...] = (1, H1, HEIGHT, H1 + 1)  # vertical, horizontal, both diagonals
 
 WIN: int = 1_000_000
@@ -7264,14 +7265,17 @@ class _Timeout(Exception):
 
 def _winning_spots(pos: int, mask: int) -> int:
     """ Empty cells that would complete four in a row for the player owning pos """
+    # Vertical: three stones directly below. Then horizontal (shift 7 = H1) and the two diagonals
+    # (shifts 6 and 8): a cell completes a line if a pair next to it on one side is extended by a
+    # third stone beyond the pair or by one stone on the other side. Unrolled because this is the
+    # hottest function of the search.
     spots = (pos << 1) & (pos << 2) & (pos << 3)
-    for shift in (H1, HEIGHT, H1 + 1):
-        pair = (pos << shift) & (pos << (2 * shift))
-        spots |= pair & (pos << (3 * shift))
-        spots |= pair & (pos >> shift)
-        pair = (pos >> shift) & (pos >> (2 * shift))
-        spots |= pair & (pos << shift)
-        spots |= pair & (pos >> (3 * shift))
+    up1, up2, dn1, dn2 = pos << 7, pos << 14, pos >> 7, pos >> 14
+    spots |= (up1 & up2 & ((pos << 21) | dn1)) | (dn1 & dn2 & (up1 | (pos >> 21)))
+    up1, up2, dn1, dn2 = pos << 6, pos << 12, pos >> 6, pos >> 12
+    spots |= (up1 & up2 & ((pos << 18) | dn1)) | (dn1 & dn2 & (up1 | (pos >> 18)))
+    up1, up2, dn1, dn2 = pos << 8, pos << 16, pos >> 8, pos >> 16
+    spots |= (up1 & up2 & ((pos << 24) | dn1)) | (dn1 & dn2 & (up1 | (pos >> 24)))
     return spots & (BOARD ^ mask)
 
 
@@ -7316,19 +7320,26 @@ def _evaluate(pos: int, opp: int, mask: int, my_threats: int, opp_threats: int) 
     return score
 
 
-def _order_moves(pos: int, mask: int, moves: int, first: int) -> List[int]:
-    """ Moves as single-bit boards: the hinted move first, then those creating the most threats """
-    scored: List[Tuple[int, int]] = []
-    for col in MOVE_ORDER:
-        move = moves & COL_MASKS[col]
+def _order_children(pos: int, mask: int, moves: int, first: int) -> List[Tuple[int, int]]:
+    """ (move, threats) pairs, moves as single-bit boards: the hinted move first, then those
+    creating the most threats. threats = _winning_spots(pos | move, mask | move) is what the
+    child position needs as its opponent's threats, so it is passed down instead of recomputed. """
+    if not moves & (moves - 1):
+        return [(moves, _winning_spots(pos | moves, mask | moves))]  # a single (often forced) move
+    scored: List[Tuple[int, int, int, int]] = []
+    for rank, col_mask in enumerate(ORDERED_COL_MASKS):
+        move = moves & col_mask
         if move:
-            if move == first:
-                priority = 1000
-            else:
-                priority = _winning_spots(pos | move, mask | move).bit_count()
-            scored.append((priority, move))
-    scored.sort(key=lambda pm: -pm[0])  # stable, so ties keep the center-first order
-    return [move for _, move in scored]
+            threats = _winning_spots(pos | move, mask | move)
+            priority = 1000 if move == first else threats.bit_count()
+            scored.append((-priority, rank, move, threats))  # ties keep the center-first order
+    scored.sort()
+    return [(move, threats) for _, _, move, threats in scored]
+
+
+def _order_moves(pos: int, mask: int, moves: int, first: int) -> List[int]:
+    """ The moves of _order_children, without their threats """
+    return [move for move, _ in _order_children(pos, mask, moves, first)]
 
 
 class _Searcher:
@@ -7336,9 +7347,11 @@ class _Searcher:
         self.deadline: float = deadline
         self.nodes: int = 0
 
-    def negamax(self, pos: int, mask: int, depth: int, alpha: int, beta: int, ply: int) -> int:
+    def negamax(self, pos: int, mask: int, depth: int, alpha: int, beta: int, ply: int,
+                my_threats: int = -1, opp_threats: int = -1) -> int:
         """ Value of the position for the player to move. ply is the number of moves made since
-        the root; a win on move k (counted from the root) scores WIN - k. """
+        the root; a win on move k (counted from the root) scores WIN - k. The threat maps of both
+        players (_winning_spots) are computed here unless the caller already has them. """
         self.nodes += 1
         if (self.nodes & 1023) == 0 and time.perf_counter() > self.deadline:
             raise _Timeout()
@@ -7346,13 +7359,14 @@ class _Searcher:
         if mask == BOARD:
             return 0
 
-        possible = _possible(mask)
-        my_threats = _winning_spots(pos, mask)
+        possible = (mask + BOTTOM) & BOARD
+        if my_threats < 0:
+            my_threats = _winning_spots(pos, mask)
+            opp_threats = _winning_spots(pos ^ mask, mask)
         if my_threats & possible:
             return WIN - (ply + 1)
 
         opp = pos ^ mask
-        opp_threats = _winning_spots(opp, mask)
         forced = possible & opp_threats
         if forced:
             if forced & (forced - 1):  # two immediate threats: cannot block both
@@ -7392,14 +7406,18 @@ class _Searcher:
         alpha_orig = alpha
         best_value = -WIN - 1
         best_move = 0
-        for idx, move in enumerate(_order_moves(pos, mask, moves, tt_move)):
+        for idx, (move, threats) in enumerate(_order_children(pos, mask, moves, tt_move)):
+            # after our move the opponent keeps their threats minus the cell we just filled
+            child_mask, child_threats = mask | move, opp_threats & ~move
             if idx == 0:
-                value = -self.negamax(opp, mask | move, depth - 1, -beta, -alpha, ply + 1)
+                value = -self.negamax(opp, child_mask, depth - 1, -beta, -alpha, ply + 1, child_threats, threats)
             else:
                 # principal variation search: prove the move is no better with a null window
-                value = -self.negamax(opp, mask | move, depth - 1, -alpha - 1, -alpha, ply + 1)
+                value = -self.negamax(opp, child_mask, depth - 1, -alpha - 1, -alpha, ply + 1,
+                                      child_threats, threats)
                 if alpha < value < beta:
-                    value = -self.negamax(opp, mask | move, depth - 1, -beta, -value, ply + 1)
+                    value = -self.negamax(opp, child_mask, depth - 1, -beta, -value, ply + 1,
+                                          child_threats, threats)
             if value > best_value:
                 best_value, best_move = value, move
                 if value > alpha:
@@ -7428,13 +7446,16 @@ class _Searcher:
         alpha, beta = -WIN - 1, WIN + 1
         best_value, best_move = -WIN - 1, ordered[0]
         opp = pos ^ mask
+        opp_threats = _winning_spots(opp, mask)
         for idx, move in enumerate(ordered):
+            child_mask = mask | move
+            child_threats, threats = opp_threats & ~move, _winning_spots(pos | move, child_mask)
             if idx == 0:
-                value = -self.negamax(opp, mask | move, depth - 1, -beta, -alpha, 1)
+                value = -self.negamax(opp, child_mask, depth - 1, -beta, -alpha, 1, child_threats, threats)
             else:
-                value = -self.negamax(opp, mask | move, depth - 1, -alpha - 1, -alpha, 1)
+                value = -self.negamax(opp, child_mask, depth - 1, -alpha - 1, -alpha, 1, child_threats, threats)
                 if value > alpha:
-                    value = -self.negamax(opp, mask | move, depth - 1, -beta, -value, 1)
+                    value = -self.negamax(opp, child_mask, depth - 1, -beta, -value, 1, child_threats, threats)
             partial.append((value, move))
             if value > best_value:
                 best_value, best_move = value, move
@@ -7451,14 +7472,14 @@ class _Solver:
         self.deadline: float = deadline
         self.nodes: int = 0
 
-    def negamax(self, pos: int, mask: int, moves: int, alpha: int, beta: int) -> int:
-        """ Requires that the player to move cannot win immediately """
+    def negamax(self, pos: int, mask: int, moves: int, alpha: int, beta: int, opp_threats: int) -> int:
+        """ Requires that the player to move cannot win immediately. opp_threats is
+        _winning_spots of the opponent, which the caller already has. """
         self.nodes += 1
         if (self.nodes & 1023) == 0 and time.perf_counter() > self.deadline:
             raise _Timeout()
 
-        possible = _possible(mask)
-        opp_threats = _winning_spots(pos ^ mask, mask)
+        possible = (mask + BOTTOM) & BOARD
         forced = possible & opp_threats
         if forced:
             if forced & (forced - 1):
@@ -7493,8 +7514,8 @@ class _Solver:
                 return beta
 
         opp = pos ^ mask
-        for move in _order_moves(pos, mask, moves_ok, 0):
-            score = -self.negamax(opp, mask | move, moves + 1, -beta, -alpha)
+        for move, threats in _order_children(pos, mask, moves_ok, 0):
+            score = -self.negamax(opp, mask | move, moves + 1, -beta, -alpha, threats)
             if score >= beta:
                 _solve_tt[key] = score + MAX_SCORE - 2 * MIN_SCORE + 2
                 return score
@@ -7516,19 +7537,19 @@ class _Solver:
             return -1, [possible & COL_MASKS[col] for col in MOVE_ORDER if possible & COL_MASKS[col]]
 
         moves = mask.bit_count()
-        ordered = _order_moves(pos, mask, safe, 0)
+        children = _order_children(pos, mask, safe, 0)
         opp = pos ^ mask
         not_losing: List[int] = []
-        for move in ordered:
+        for move, threats in children:
             # the opponent's value after our move: below 0 means we win, 0 a draw
-            if self.negamax(opp, mask | move, moves + 1, -1, 0) < 0:
+            if self.negamax(opp, mask | move, moves + 1, -1, 0, threats) < 0:
                 return 1, [move]
-        for move in ordered:
-            if self.negamax(opp, mask | move, moves + 1, 0, 1) <= 0:
+        for move, threats in children:
+            if self.negamax(opp, mask | move, moves + 1, 0, 1, threats) <= 0:
                 not_losing.append(move)
         if not_losing:
             return 0, not_losing
-        return -1, ordered
+        return -1, [move for move, _ in children]
 
 
 def _move_to_col(move: int) -> int:
