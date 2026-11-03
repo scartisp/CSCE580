@@ -11,7 +11,7 @@ WIDTH: int = 7
 HEIGHT: int = 6
 H1: int = HEIGHT + 1
 
-TIME_LIMIT: float = 3.0  # seconds of search per move (the assignment allows 5)
+TIME_LIMIT: float = 4.0  # seconds of search per move (the assignment allows 5)
 
 BOTTOM: int = sum(1 << (col * H1) for col in range(WIDTH))
 BOARD: int = BOTTOM * ((1 << HEIGHT) - 1)
@@ -7253,7 +7253,7 @@ MIN_SCORE: int = -(SIZE // 2) + 3
 MAX_SCORE: int = (SIZE + 1) // 2 - 3
 SOLVE_FROM: int = 14
 SOLVE_FULL_FROM: int = 16
-SOLVE_SHARE_EARLY: float = 0.4
+SOLVE_SHARE_EARLY: float = 0.6
 SOLVE_SHARE: float = 0.75
 _solve_tt: Dict[int, int] = {}
 
